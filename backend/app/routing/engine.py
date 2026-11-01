@@ -509,54 +509,53 @@ def analyze_safe_vs_shortest_route(
                 dist_b_real = dist_1
                 steps_b = _format_osrm_steps(r1.get("legs", []), dest_name)
 
-    # 2. If Route B was not obtained via direct alternatives, compute via Perpendicular Arterial Waypoint
-    if not osrm_coords_b:
-        d_lat = lat2 - lat1
-        d_lon = lon2 - lon1
-        mag = math.sqrt(d_lat**2 + d_lon**2)
+    # 2. If Route B was not obtained via direct alternatives, compute via Road-Normal Nearest-Snapped Waypoint
+    if not osrm_coords_b and osrm_coords_a:
+        coords_raw = data_direct["routes"][0]["geometry"]["coordinates"] if (data_direct and data_direct.get("routes")) else []
+        if len(coords_raw) >= 4:
+            mid_i = len(coords_raw) // 2
+            mid_lon, mid_lat = coords_raw[mid_i]
+            p_i = max(0, mid_i - 3)
+            n_i = min(len(coords_raw) - 1, mid_i + 3)
+            t_lon = coords_raw[n_i][0] - coords_raw[p_i][0]
+            t_lat = coords_raw[n_i][1] - coords_raw[p_i][1]
+            t_mag = math.hypot(t_lat, t_lon) or 1.0
+            norm_lon = -t_lat / t_mag
+            norm_lat = t_lon / t_mag
+            dist_scale = min(0.025, max(0.006, math.hypot(lat2 - lat1, lon2 - lon1) * 0.18))
 
-        if mag > 0:
-            perp_lat = -d_lon / mag
-            perp_lon = d_lat / mag
-            scale = min(0.065, max(0.015, mag * 0.22))
+            for sign in [1, -1]:
+                for factor in [1.0, 1.4, 0.6]:
+                    c_lon = mid_lon + sign * norm_lon * dist_scale * factor
+                    c_lat = mid_lat + sign * norm_lat * dist_scale * factor
 
-            # Try side 1 (positive perpendicular)
-            mid_lat_1 = (lat1 + lat2) / 2.0 + perp_lat * scale
-            mid_lon_1 = (lon1 + lon2) / 2.0 + perp_lon * scale
+                    # Query OSRM nearest to snap to a real, valid public road
+                    near_url = f"https://router.project-osrm.org/nearest/v1/driving/{c_lon:.5f},{c_lat:.5f}?number=2"
+                    near_data = _fetch_osrm_route(near_url, timeout=3.0)
+                    if not near_data or not near_data.get("waypoints"):
+                        continue
+                    wp = near_data["waypoints"][0]
+                    if wp.get("distance", 9999) > 600:
+                        continue
+                    snap_lon, snap_lat = wp["location"]
 
-            url_b1 = (
-                f"https://router.project-osrm.org/route/v1/driving/"
-                f"{lon1},{lat1};{round(mid_lon_1, 5)},{round(mid_lat_1, 5)};{lon2},{lat2}?"
-                f"overview=full&geometries=geojson&steps=true"
-            )
-            data_b1 = _fetch_osrm_route(url_b1, timeout=4.0)
-
-            if data_b1 and data_b1.get("routes"):
-                rb = data_b1["routes"][0]
-                coords_b = [[c[1], c[0]] for c in rb["geometry"]["coordinates"]]
-                d_b = round(rb["distance"] / 1000.0, 2)
-                if not dist_a_real or d_b > dist_a_real * 1.02:
-                    osrm_coords_b = coords_b
-                    dist_b_real = d_b
-                    steps_b = _format_osrm_steps(rb.get("legs", []), dest_name)
-
-            # If side 1 failed or returned identical, try side 2 (negative perpendicular)
-            if not osrm_coords_b:
-                mid_lat_2 = (lat1 + lat2) / 2.0 - perp_lat * scale
-                mid_lon_2 = (lon1 + lon2) / 2.0 - perp_lon * scale
-                url_b2 = (
-                    f"https://router.project-osrm.org/route/v1/driving/"
-                    f"{lon1},{lat1};{round(mid_lon_2, 5)},{round(mid_lat_2, 5)};{lon2},{lat2}?"
-                    f"overview=full&geometries=geojson&steps=true"
-                )
-                data_b2 = _fetch_osrm_route(url_b2, timeout=4.0)
-                if data_b2 and data_b2.get("routes"):
-                    rb2 = data_b2["routes"][0]
-                    coords_b2 = [[c[1], c[0]] for c in rb2["geometry"]["coordinates"]]
-                    d_b2 = round(rb2["distance"] / 1000.0, 2)
-                    osrm_coords_b = coords_b2
-                    dist_b_real = d_b2
-                    steps_b = _format_osrm_steps(rb2.get("legs", []), dest_name)
+                    ub = (
+                        f"https://router.project-osrm.org/route/v1/driving/"
+                        f"{lon1},{lat1};{snap_lon:.5f},{snap_lat:.5f};{lon2},{lat2}?"
+                        f"overview=full&geometries=geojson&steps=true&continue_straight=true"
+                    )
+                    data_b = _fetch_osrm_route(ub, timeout=4.0)
+                    if data_b and data_b.get("routes"):
+                        rb = data_b["routes"][0]
+                        d_b = round(rb["distance"] / 1000.0, 2)
+                        coords_b = [[c[1], c[0]] for c in rb["geometry"]["coordinates"]]
+                        if dist_a_real and d_b >= dist_a_real * 1.02 and d_b <= dist_a_real * 1.8 and coords_b != osrm_coords_a:
+                            osrm_coords_b = coords_b
+                            dist_b_real = d_b
+                            steps_b = _format_osrm_steps(rb.get("legs", []), dest_name)
+                            break
+                if osrm_coords_b:
+                    break
 
     # 3. High-Fidelity Curved Corridor Fallbacks (if OSRM is offline or blocked)
     dist_a = dist_a_real if dist_a_real else round(base_dist, 2)
