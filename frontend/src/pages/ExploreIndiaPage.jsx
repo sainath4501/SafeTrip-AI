@@ -136,16 +136,16 @@ export default function ExploreIndiaPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 pb-24 overflow-x-hidden md:overflow-x-visible">
       {/* Header & Smart Search Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl mb-6 sm:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 sm:mb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold mb-2">
-              <Compass className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-[11px] sm:text-xs font-bold mb-2">
+              <Compass className="w-3.5 h-3.5 shrink-0" />
               <span>State & District Tourism Hierarchy Explorer</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
               Explore All 36 Indian States, Union Territories & Districts
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
@@ -156,7 +156,7 @@ export default function ExploreIndiaPage() {
           {selectedState && (
             <button
               onClick={() => navigate(`/planner?dest=${encodeURIComponent(selectedState.name)}`)}
-              className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-extrabold shadow-lg transition shrink-0"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-extrabold shadow-lg transition shrink-0 text-center"
             >
               Plan AI Trip to {selectedState.name} →
             </button>

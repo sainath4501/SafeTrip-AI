@@ -85,31 +85,31 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
       {/* Header */}
-      <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-semibold mb-2">
-            <Database className="w-3.5 h-3.5" />
-            System Administration & Data Governance Console
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] sm:text-xs font-semibold mb-2 max-w-full truncate">
+            <Database className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">System Administration & Data Governance Console</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
             Admin Control Center (22 Relational Tables)
           </h1>
-          <p className="text-slate-300 text-sm mt-1">
+          <p className="text-slate-300 text-xs sm:text-sm mt-1">
             Manage verified Indian tourist places, monitor 36 States/UTs coverage, review safety incidents, and oversee PDF dataset ingestion.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto shrink-0">
           <Link
             to="/pdf"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow transition"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow transition text-center cursor-pointer"
           >
             <FileText className="w-4 h-4" /> PDF Dataset Pipeline
           </Link>
           <Link
             to="/ml-dashboard"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow transition"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow transition text-center cursor-pointer"
           >
             <Cpu className="w-4 h-4" /> ML Model Evaluation
           </Link>

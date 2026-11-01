@@ -30,6 +30,19 @@ body {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideLeft {
+  animation: slideLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Fix Tailwind CDN Preflight vs Leaflet Tile & SVG Rendering */
 .leaflet-container {
   width: 100% !important;
@@ -62,4 +75,35 @@ body {
   position: absolute;
   left: 0;
   top: 0;
+}
+
+/* ==========================================================================
+   Mobile-Only Safety Guardrails (Strictly for screens < 768px)
+   DESKTOP VERSION (>= 768px) IS 100% UNCHANGED AND UNAFFECTED
+   ========================================================================== */
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent oversized headings, long place names, or URLs from creating horizontal scroll */
+  h1, h2, h3, h4, h5, h6, p, span, a, label {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  /* Prevent mobile browser layout blowouts */
+  img, svg, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Leaflet map height on small mobile */
+  .leaflet-container {
+    min-height: 380px !important;
+  }
 }

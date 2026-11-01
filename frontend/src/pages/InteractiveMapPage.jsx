@@ -616,21 +616,21 @@ export default function InteractiveMapPage() {
     : routeComparison?.route_a;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 overflow-x-hidden md:overflow-x-visible">
       {/* Top Header & Search Bar (Google Maps Style) */}
-      <div className="bg-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-xl mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-xl mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-bold mb-2">
-              <Compass className="w-3.5 h-3.5" />
-              <span>SafeTrip AI • Live Map Explorer & Dual-Route Safe Navigation</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-[11px] sm:text-xs font-bold mb-2 max-w-full truncate">
+              <Compass className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">SafeTrip AI • Live Map Explorer & Dual-Route Safe Navigation</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight">
               Interactive Map & Intelligent Route Analyzer
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
               Explore all 36 Indian states, select cities, discover verified tourist places, and compare Shortest Route A vs AI-Optimized Safe Route B like Google Maps.
             </p>
           </div>
@@ -639,7 +639,7 @@ export default function InteractiveMapPage() {
             <button
               onClick={() => handleCompareRoutes()}
               disabled={loadingRoute}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-teal-500/25 transition cursor-pointer flex items-center gap-2"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-teal-500/25 transition cursor-pointer flex items-center justify-center gap-2"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingRoute ? 'animate-spin' : ''}`} />
               <span>{loadingRoute ? 'Computing Route...' : 'Recalculate Routes'}</span>
@@ -910,13 +910,13 @@ export default function InteractiveMapPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Map View (7 cols on lg) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative" style={{ height: '680px', minHeight: '680px' }}>
+        <div className="lg:col-span-7 bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative h-[400px] sm:h-[500px] lg:h-[680px]">
           {/* Map canvas */}
           <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
 
           {/* Floating Map Legend Overlay */}
-          <div className="absolute top-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md text-white p-3 px-4 rounded-2xl shadow-xl border border-white/10 text-xs pointer-events-auto">
-            <div className="font-extrabold text-[11px] uppercase tracking-wider text-teal-400 mb-1.5 flex items-center gap-1.5">
+          <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 bg-slate-900/90 backdrop-blur-md text-white p-2.5 sm:p-3 sm:px-4 rounded-xl sm:rounded-2xl shadow-xl border border-white/10 text-xs pointer-events-auto max-w-full sm:max-w-xs">
+            <div className="font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider text-teal-400 mb-1.5 flex items-center gap-1.5">
               <RouteIcon className="w-3.5 h-3.5" />
               <span>Google Maps Route Comparison</span>
             </div>
@@ -957,7 +957,7 @@ export default function InteractiveMapPage() {
         <div className="lg:col-span-5 flex flex-col space-y-4">
           
           {/* Tab Selector: Directions | Why Route B is Better | Places in City | Local Transit */}
-          <div className="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-xs flex items-center justify-between gap-1 text-xs">
+          <div className="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-xs flex items-center justify-between gap-1 text-[11px] sm:text-xs overflow-x-auto no-scrollbar">
             {[
               { id: 'directions', label: 'Directions & Steps', icon: Navigation },
               { id: 'comparison', label: 'Why Route B is Better', icon: CheckCircle2 },

@@ -79,24 +79,24 @@ export default function IncidentReportPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 overflow-x-hidden md:overflow-x-visible">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-300 text-xs font-semibold mb-2">
-          <ShieldAlert className="w-3.5 h-3.5" />
-          Crowdsourced Tourist Safety Telemetry & Scam Prevention
+      <div className="bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl mb-6 sm:mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-300 text-[11px] sm:text-xs font-semibold mb-2 max-w-full truncate">
+          <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Crowdsourced Tourist Safety Telemetry & Scam Prevention</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
           Report a Tourist Safety Incident or Scam Alert
         </h1>
-        <p className="text-slate-300 text-sm mt-1 max-w-3xl">
+        <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
           Anonymized community incident reports directly feed the SafeTrip AI Scam & Route Risk Engine to warn fellow travelers and suggest safer alternatives.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Left: Submission Form */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
           <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-600" />
             Submit Safety / Scam Report

@@ -69,18 +69,18 @@ export default function PlaceDetailsPage() {
   const transit = place.transportFromCenter?.options || {};
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 pb-24 overflow-x-hidden md:overflow-x-visible">
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 mb-4"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 mb-4 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Results</span>
       </button>
 
       {/* Hero Banner */}
-      <div className="bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-10 text-white shadow-xl mb-6 sm:mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-500 text-white">
@@ -100,22 +100,22 @@ export default function PlaceDetailsPage() {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{place.name}</h1>
-            <p className="flex items-center gap-1.5 text-sm text-slate-300 mt-2">
-              <MapPin className="w-4 h-4 text-sky-400" />
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight break-words">{place.name}</h1>
+            <p className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-300 mt-2">
+              <MapPin className="w-4 h-4 text-sky-400 shrink-0" />
               <span>
-                {place.city}, {place.district} District, {place.state} • Coords: ({place.latitude}, {place.longitude})
+                {place.city}, {place.district} District, {place.state}
               </span>
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2.5 shrink-0">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 shrink-0">
             <button
               onClick={() => {
                 addPlaceToBasket(place);
                 navigate(`/planner?dest=${encodeURIComponent(place.city)}`);
               }}
-              className="px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg transition"
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition cursor-pointer"
             >
               <Calendar className="w-4 h-4" />
               <span>Plan Trip Including {place.name}</span>
@@ -124,7 +124,7 @@ export default function PlaceDetailsPage() {
               onClick={() =>
                 navigate(`/map?lat=${place.latitude}&lon=${place.longitude}&name=${encodeURIComponent(place.name)}`)
               }
-              className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs flex items-center gap-2 transition"
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
             >
               <Navigation className="w-4 h-4 text-sky-300" />
               <span>Interactive Safe Map</span>

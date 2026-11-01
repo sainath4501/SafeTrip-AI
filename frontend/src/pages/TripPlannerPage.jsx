@@ -63,8 +63,8 @@ export default function TripPlannerPage() {
   });
 
   useEffect(() => {
-    api.getStates().then((res) => setStates(res.states || [])).catch(() => {});
-    api.getCities().then((res) => setCities(res.cities || [])).catch(() => {});
+    api.getStates().then((res) => setStates(res.states || [])).catch(() => { });
+    api.getCities().then((res) => setCities(res.cities || [])).catch(() => { });
   }, []);
 
   const updateCriteria = (patch) => {
@@ -129,7 +129,7 @@ export default function TripPlannerPage() {
         travelPreference: searchCriteria.travelPreference || 'Historical & Couple',
         categories: searchCriteria.categories || ['Historical', 'Museum'],
         customWeights: weights,
-      }).then((data) => setRecommendations(data)).catch(() => {});
+      }).then((data) => setRecommendations(data)).catch(() => { });
     }
   }, []);
 
@@ -161,10 +161,10 @@ export default function TripPlannerPage() {
   const activeDayObj = activeItinerary?.days?.find((d) => d.day === selectedDay) || activeItinerary?.days?.[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 overflow-x-hidden md:overflow-x-visible">
       {/* Page Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl mb-6 sm:mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -172,7 +172,7 @@ export default function TripPlannerPage() {
               <Sparkles className="w-3.5 h-3.5" />
               <span>Hybrid AI Recommendation + Geo-Clustered Day Planner</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight">
               AI Day-by-Day Trip Planner & Route Logistics Engine
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
@@ -183,7 +183,7 @@ export default function TripPlannerPage() {
             <button
               onClick={handleDownloadPdf}
               disabled={pdfLoading}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition shrink-0 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition shrink-0 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>{pdfLoading ? 'Generating PDF...' : 'Download Full PDF Travel Guide'}</span>
@@ -193,7 +193,7 @@ export default function TripPlannerPage() {
       </div>
 
       {/* Trip Configuration Form */}
-      <form onSubmit={handleGenerate} className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-8">
+      <form onSubmit={handleGenerate} className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-6 sm:mb-8">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
             <Compass className="w-4 h-4 text-teal-600" />
@@ -323,11 +323,10 @@ export default function TripPlannerPage() {
                   key={cat}
                   type="button"
                   onClick={() => toggleCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer ${
-                    active
-                      ? 'bg-teal-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer ${active
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
                 >
                   {cat}
                 </button>
@@ -371,7 +370,7 @@ export default function TripPlannerPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-teal-600/25 transition cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-3 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-teal-600/25 transition cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>{loading ? 'Computing Time-Aware Schedule...' : 'Generate Precision Day-by-Day Plan'}</span>
@@ -390,27 +389,25 @@ export default function TripPlannerPage() {
       {activeItinerary && (
         <>
           {/* Tabs: Day-by-Day Timeline vs Place Rankings */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="inline-flex rounded-2xl bg-slate-200/80 p-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto rounded-2xl bg-slate-200/80 p-1 gap-1">
               <button
                 onClick={() => setActiveTab('itinerary')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                  activeTab === 'itinerary' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`w-full sm:w-auto text-left sm:text-center px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${activeTab === 'itinerary' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
-                1. Day-by-Day Schedule & Travel Logistics ({activeItinerary.days_count} Days)
+                1. Day-by-Day Schedule ({activeItinerary.days_count} Days)
               </button>
               <button
                 onClick={() => setActiveTab('recommendations')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
-                  activeTab === 'recommendations' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`w-full sm:w-auto text-left sm:text-center px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${activeTab === 'recommendations' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 2. Explainable AI Place Ranking ({recommendations?.recommendations?.length || 0} Places)
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
                 Safety: {activeItinerary.risk?.overall_risk_level || 'LOW'} ({activeItinerary.risk?.overall_risk_score || 24}/100)
               </span>
@@ -422,10 +419,10 @@ export default function TripPlannerPage() {
 
           {activeTab === 'itinerary' ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Left 2 Columns: Day Selector & Timeline */}
               <div className="lg:col-span-2 space-y-6">
-                
+
                 {/* Day Navigation Tabs */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                   {activeItinerary.days?.map((dayObj) => {
@@ -434,17 +431,15 @@ export default function TripPlannerPage() {
                       <button
                         key={dayObj.day}
                         onClick={() => setSelectedDay(dayObj.day)}
-                        className={`px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm shrink-0 transition cursor-pointer border flex items-center gap-2 ${
-                          active
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                        }`}
+                        className={`px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm shrink-0 transition cursor-pointer border flex items-center gap-2 ${active
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
                       >
                         <Calendar className="w-3.5 h-3.5" />
                         <span>Day {dayObj.day}</span>
-                        <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                          active ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-600'
-                        }`}>
+                        <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${active ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
                           {dayObj.places?.length || 0} stops
                         </span>
                       </button>
@@ -454,7 +449,7 @@ export default function TripPlannerPage() {
 
                 {activeDayObj && (
                   <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-                    
+
                     {/* Day Header with Comprehensive Travel Metrics */}
                     <div className="pb-5 mb-6 border-b border-slate-100">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -510,7 +505,7 @@ export default function TripPlannerPage() {
                     {activeDayObj.timeline ? (
                       <div className="space-y-6">
                         {activeDayObj.timeline.map((item, idx) => {
-                          
+
                           // Non-Attraction Slots (Breakfast, Lunch, Evening Food, Hotel Return)
                           if (item.slot_type !== 'ATTRACTION') {
                             const isBreakfast = item.slot_type === 'MEAL' && idx === 0;
@@ -561,7 +556,7 @@ export default function TripPlannerPage() {
                                     </span>
                                     <span>(~{place.estimated_travel_time_mins} mins)</span>
                                   </div>
-                                  
+
                                   <div className="flex items-center gap-2">
                                     <span className="font-extrabold text-slate-900">₹{place.estimated_travel_cost_inr}</span>
                                     <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
@@ -679,7 +674,7 @@ export default function TripPlannerPage() {
 
               {/* Right Column: Intercity Travel, Complete Budget Breakdown, Hotels & Restaurants */}
               <div className="space-y-6">
-                
+
                 {/* Intercity Travel Options (Start City ➔ Destination City) */}
                 {activeItinerary.transport && (
                   <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
@@ -687,7 +682,7 @@ export default function TripPlannerPage() {
                       <Plane className="w-4 h-4 text-sky-600" />
                       <span>Intercity Travel ({activeItinerary.start_location} ➔ {activeItinerary.destination})</span>
                     </h3>
-                    
+
                     {activeItinerary.transport.options?.length > 0 ? (
                       <div className="space-y-3">
                         {activeItinerary.transport.options.map((opt, oIdx) => (
@@ -758,19 +753,18 @@ export default function TripPlannerPage() {
                           ₹{activeItinerary.budget.miscellaneous_inr?.toLocaleString('en-IN')}
                         </span>
                       </div>
-                      
+
                       <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
                         <span className="font-black text-slate-900">Total Estimated Cost</span>
                         <span className="text-base font-black text-teal-700">
                           ₹{activeItinerary.budget.total_estimated_inr?.toLocaleString('en-IN')}
                         </span>
                       </div>
-                      
+
                       <div className="text-xs text-slate-500 flex justify-between pt-1">
                         <span>Your Budget: ₹{activeItinerary.budget.total_budget_inr?.toLocaleString('en-IN')}</span>
-                        <span className={`font-black ${
-                          activeItinerary.budget.within_budget ? 'text-emerald-600' : 'text-amber-600'
-                        }`}>
+                        <span className={`font-black ${activeItinerary.budget.within_budget ? 'text-emerald-600' : 'text-amber-600'
+                          }`}>
                           {activeItinerary.budget.within_budget
                             ? `✓ Saves ₹${activeItinerary.budget.remaining_budget_inr?.toLocaleString('en-IN')}`
                             : '⚠ Budget Adjusted'}

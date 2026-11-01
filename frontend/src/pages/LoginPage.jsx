@@ -58,25 +58,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 flex items-center justify-center px-4 py-12">
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-800/20">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12 pb-24 md:pb-12">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-800/20">
         {/* Left Branding Panel */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-sky-600 via-blue-700 to-slate-900 p-8 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-sky-400/20 blur-2xl" />
+        <div className="lg:col-span-5 bg-gradient-to-br from-sky-600 via-blue-700 to-slate-900 p-6 sm:p-8 lg:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-sky-400/20 blur-2xl hidden sm:block" />
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold mb-4 sm:mb-6">
               <ShieldCheck className="w-4 h-4 text-sky-300" />
               <span>SafeTrip AI • India Tourism Platform</span>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
               Welcome Back to Smarter, Safer Travel.
             </h1>
-            <p className="text-sm text-sky-100/90 mt-3 leading-relaxed">
+            <p className="text-xs sm:text-sm text-sky-100/90 mt-2.5 sm:mt-3 leading-relaxed">
               Sign in to access personalized AI trip itineraries, real-time weather & crowd risk intelligence, safe route comparisons, and downloadable PDF travel guides.
             </p>
           </div>
 
-          <div className="relative z-10 space-y-3 mt-8 pt-6 border-t border-white/15 text-xs text-sky-100">
+          <div className="relative z-10 space-y-3 mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/15 text-xs text-sky-100">
             <div className="flex items-center gap-2.5">
               <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
               <span>Hybrid AI Destination & Day-Wise Itinerary Engine</span>
@@ -89,10 +89,10 @@ export default function LoginPage() {
         </div>
 
         {/* Right Login Form */}
-        <div className="lg:col-span-7 p-8 sm:p-10 flex flex-col justify-center">
-          <div className="mb-6">
-            <h2 className="text-2xl font-extrabold text-slate-900">Sign In to Your Account</h2>
-            <p className="text-sm text-slate-500 mt-1">
+        <div className="lg:col-span-7 p-5 sm:p-8 lg:p-10 flex flex-col justify-center">
+          <div className="mb-5 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">Sign In to Your Account</h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Don’t have an account yet?{' '}
               <Link to="/register" className="text-sky-600 font-bold hover:underline">
                 Create a free account (Sign Up)
@@ -101,8 +101,8 @@ export default function LoginPage() {
           </div>
 
           {/* Instant Demo Credentials Box */}
-          <div className="mb-6 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+          <div className="mb-5 sm:mb-6 p-3 sm:p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+            <p className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
               Quick Evaluation One-Click Login:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -111,16 +111,16 @@ export default function LoginPage() {
                 onClick={() => handleDemoFill('user@safetrip.ai', 'user123')}
                 className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold transition"
               >
-                <UserCheck className="w-4 h-4 text-sky-600" />
-                <span>Demo Traveler (user@safetrip.ai)</span>
+                <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
+                <span className="truncate">Demo Traveler (user@safetrip.ai)</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDemoFill('admin@safetrip.ai', 'admin123')}
                 className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition"
               >
-                <Award className="w-4 h-4 text-amber-600" />
-                <span>Demo Admin / ML (admin@safetrip.ai)</span>
+                <Award className="w-4 h-4 text-amber-600 shrink-0" />
+                <span className="truncate">Demo Admin (admin@safetrip.ai)</span>
               </button>
             </div>
           </div>

@@ -124,25 +124,25 @@ export default function SafetyDashboardPage() {
   }, [selectedPlaceName, visitTime, activity, destination]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold mb-2">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>6-Factor AI Safety Engine • Open-Meteo Weather Telemetry • Scikit-Learn ML Models</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] sm:text-xs font-semibold mb-2 max-w-full truncate">
+          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">6-Factor AI Safety Engine • Open-Meteo Telemetry • ML Models</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight">
           AI Tourism Safety, Weather-Activity Risk & Safer Alternatives Engine
         </h1>
-        <p className="text-slate-300 text-sm mt-1 max-w-3xl">
+        <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
           Evaluates real-time composite safety across all 36 Indian states using 4 trained Scikit-Learn ML models (Crowd Density, Weather Sensitivity, Crime Index, Road Accident Risk) plus time-of-day risk windows.
         </p>
       </div>
 
       {/* Controls & Drilldown (State ➔ City ➔ Place) */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
           
           {/* 1. Filter State */}
@@ -294,27 +294,27 @@ export default function SafetyDashboardPage() {
       {evaluation && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-6 border-b border-slate-100">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-6 border-b border-slate-100">
                 <div>
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-600">
                     Real-Time AI Safety & Risk Assessment
                   </span>
-                  <h2 className="text-2xl font-black text-slate-900 mt-0.5">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 break-words">
                     {evaluation.place_name} ({evaluation.destination})
                   </h2>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">
                     Planned Time: {visitTime} • Activity: {activity}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-xs text-slate-500 font-medium">Composite Risk Score</div>
-                    <div className="text-3xl font-black text-slate-900">
+                <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
+                  <div className="text-left sm:text-right">
+                    <div className="text-[11px] sm:text-xs text-slate-500 font-medium">Composite Risk Score</div>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900">
                       {evaluation.overall_risk_score}/100
                     </div>
                   </div>
-                  <span className={`px-4 py-2 rounded-2xl text-xs font-black tracking-wide ${
+                  <span className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl text-xs font-black tracking-wide ${
                     evaluation.overall_risk_level === 'LOW'
                       ? 'bg-emerald-100 text-emerald-800'
                       : evaluation.overall_risk_level === 'MEDIUM'

@@ -116,22 +116,22 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="pb-20">
+    <div className="pb-16 sm:pb-20 overflow-x-hidden md:overflow-x-visible">
       {/* HERO SECTION */}
-      <section className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white pt-10 pb-24 px-4 sm:px-6 overflow-visible">
+      <section className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white pt-8 sm:pt-10 pb-16 sm:pb-24 px-3 sm:px-6 overflow-hidden md:overflow-visible">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(14,165,233,0.22),transparent_60%)] pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none hidden sm:block" />
 
         <div className="max-w-7xl mx-auto relative z-20">
-          <div className="text-center max-w-4xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300 text-xs font-bold mb-5">
-              <Sparkles className="w-4 h-4 text-sky-400" />
-              <span>SafeTrip AI • Intelligent Indian Tourism & Safety Platform</span>
+          <div className="text-center max-w-4xl mx-auto mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300 text-[11px] sm:text-xs font-bold mb-4 sm:mb-5 max-w-full truncate">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
+              <span className="truncate">SafeTrip AI • Intelligent Indian Tourism & Safety Platform</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl lg:text-6xl font-extrabold tracking-tight leading-tight">
               Plan Smarter. <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-emerald-400">Travel Safer.</span> Explore India.
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-xs sm:text-base lg:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
               AI-powered personalized tourism planning with safety, weather, crowd and route intelligence across 240+ Indian cities & all 36 States/UTs.
             </p>
           </div>
@@ -139,9 +139,9 @@ export default function LandingPage() {
           {/* MAIN BOOKING-STYLE SEARCH ENGINE WIDGET */}
           <form
             onSubmit={handlePlanTrip}
-            className="bg-white text-slate-900 rounded-3xl shadow-2xl p-5 sm:p-7 border border-slate-200/80 max-w-6xl mx-auto"
+            className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-7 border border-slate-200/80 max-w-6xl mx-auto"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 items-end">
               {/* 1. FROM: Starting Location (All Indian Cities) */}
               <div className="lg:col-span-3">
                 <AllIndiaCitySelect
@@ -156,14 +156,15 @@ export default function LandingPage() {
 
               {/* Swap From <-> To Button + 2. TO: Destination (All Indian Cities & States) */}
               <div className="lg:col-span-4 relative">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                    2. To (Destination City or State)
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate">
+                    <span className="sm:hidden">2. To (Destination)</span>
+                    <span className="hidden sm:inline">2. To (Destination City or State)</span>
                   </label>
                   <button
                     type="button"
                     onClick={handleSwapCities}
-                    className="text-[11px] font-bold text-sky-600 hover:text-sky-800 px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 transition cursor-pointer"
+                    className="text-[10px] sm:text-[11px] font-bold text-sky-600 hover:text-sky-800 px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 transition cursor-pointer shrink-0"
                     title="Swap From and To Cities"
                   >
                     ⇄ Swap From / To
@@ -221,7 +222,7 @@ export default function LandingPage() {
                   Travelers & Budget
                 </label>
 
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 w-full">
                   <select
                     value={travelers}
                     onChange={(e) => setTravelers(Number(e.target.value))}
@@ -251,7 +252,7 @@ export default function LandingPage() {
             {/* Tourism Preferences Selector + Submit Row */}
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-center flex-wrap gap-1.5">
-                <span className="text-xs font-extrabold text-slate-500 mr-1">
+                <span className="text-xs font-extrabold text-slate-500 mr-1 w-full sm:w-auto">
                   Tourism Preferences:
                 </span>
                 {['Historical', 'Couple', 'Museum', 'Food', 'Temple', 'Nature', 'Beach', 'Hill Station', 'Fort', 'Wildlife'].map(
@@ -277,7 +278,7 @@ export default function LandingPage() {
 
               <button
                 type="submit"
-                className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-extrabold text-sm shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 shrink-0 transition"
+                className="w-full lg:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-extrabold text-sm shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 shrink-0 transition cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Plan My Trip</span>
@@ -287,13 +288,13 @@ export default function LandingPage() {
           </form>
 
           {/* Quick Evaluation Scenarios (Section 48 Demo Flow) */}
-          <div className="max-w-6xl mx-auto mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="text-slate-400 font-semibold">Instant Project Evaluation Flows:</span>
+          <div className="max-w-6xl mx-auto mt-5 flex flex-wrap items-center justify-center gap-2 text-xs px-2">
+            <span className="text-slate-400 font-semibold w-full sm:w-auto text-center sm:text-left">Instant Project Evaluation Flows:</span>
             <button
               onClick={() =>
                 runCanonicalDemo('Delhi', 3, 15000, ['Historical', 'Couple', 'Museum', 'Food'])
               }
-              className="px-3 py-1.5 rounded-full bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 text-sky-200 font-bold transition"
+              className="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 rounded-full bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 text-sky-200 font-bold transition text-center"
             >
               🚀 Demo 1: Bangalore → Delhi (3 Days, ₹15,000, Historical + Couple + Food)
             </button>
@@ -301,7 +302,7 @@ export default function LandingPage() {
               onClick={() =>
                 runCanonicalDemo('Mysore', 2, 10000, ['Palace', 'Heritage', 'Family', 'Nature'])
               }
-              className="px-3 py-1.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-200 font-bold transition"
+              className="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-200 font-bold transition text-center"
             >
               🏰 Demo 2: Karnataka → Mysore Royal Circuit (2 Days, ₹10,000)
             </button>
@@ -309,7 +310,7 @@ export default function LandingPage() {
               onClick={() =>
                 runCanonicalDemo('Jaipur', 3, 20000, ['Fort', 'Palace', 'Cultural', 'Shopping'])
               }
-              className="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/30 text-amber-200 font-bold transition"
+              className="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/30 text-amber-200 font-bold transition text-center"
             >
               🐪 Demo 3: Jaipur Royal Heritage (3 Days, ₹20,000)
             </button>
@@ -318,11 +319,11 @@ export default function LandingPage() {
       </section>
 
       {/* TOURISM CATEGORIES EXPLORER (Section 4 & 5) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-10 relative z-20">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/90 p-6">
-          <div className="flex items-center justify-between mb-4">
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-10 relative z-20">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/90 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
                 Explore by Tourism Category
               </h2>
               <p className="text-xs text-slate-500">
@@ -331,21 +332,21 @@ export default function LandingPage() {
             </div>
             <button
               onClick={() => navigate('/explore')}
-              className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
               <span>View All 36 States & UTs</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-2 sm:gap-2.5">
             {HERO_CATEGORIES.map((c) => (
               <button
                 key={c.label}
                 onClick={() => navigate(`/explore?category=${encodeURIComponent(c.value)}`)}
-                className="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50 hover:bg-sky-50 hover:border-sky-300 border border-slate-200/80 transition group text-center"
+                className="flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl bg-slate-50 hover:bg-sky-50 hover:border-sky-300 border border-slate-200/80 transition group text-center"
               >
-                <span className="text-2xl mb-1 group-hover:scale-110 transition">
+                <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition">
                   {c.emoji}
                 </span>
                 <span className="text-[11px] font-bold text-slate-700 group-hover:text-sky-700 leading-tight">
@@ -358,13 +359,13 @@ export default function LandingPage() {
       </section>
 
       {/* 6 PILLARS OF SAFETRIP AI */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-12">
-        <div className="text-center max-w-3xl mx-auto mb-8">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 mt-10 sm:mt-12">
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900">
             More Than a Recommendation Site — A Unified Safety & Trip Intelligence Engine
           </h2>
-          <p className="text-sm text-slate-600 mt-2">
-            Combining Machine Learning models trained on Indian Tourism,IMD Rainfall, NCRB Crime, and Road Risk datasets with real-time weather and routing.
+          <p className="text-xs sm:text-sm text-slate-600 mt-2">
+            Combining Machine Learning models trained on Indian Tourism, IMD Rainfall, NCRB Crime, and Road Risk datasets with real-time weather and routing.
           </p>
         </div>
 
@@ -438,10 +439,10 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURED VERIFIED DESTINATIONS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-12">
-        <div className="flex items-center justify-between mb-6">
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 mt-10 sm:mt-12">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
               Top AI-Verified Indian Tourist Landmarks
             </h2>
             <p className="text-xs text-slate-500">
@@ -450,7 +451,7 @@ export default function LandingPage() {
           </div>
           <button
             onClick={() => navigate('/explore')}
-            className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition"
+            className="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition cursor-pointer"
           >
             Explore All 300+ Places
           </button>

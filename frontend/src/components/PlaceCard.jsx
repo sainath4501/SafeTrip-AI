@@ -165,12 +165,12 @@ export default function PlaceCard({ place, showAiExplanations = false }) {
         </div>
 
         {/* Action Buttons (Section 43: View Details, Add to Trip, View on Map) */}
-        <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-3 gap-1 sm:gap-1.5 pt-2 border-t border-slate-100">
           <button
             onClick={() => navigate(`/places/${place.id}`)}
-            className="flex items-center justify-center gap-1 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition"
+            className="flex items-center justify-center gap-1 px-1.5 sm:px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] sm:text-xs font-bold transition cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5 shrink-0" />
             <span>Details</span>
           </button>
 
@@ -178,7 +178,7 @@ export default function PlaceCard({ place, showAiExplanations = false }) {
             onClick={() =>
               inBasket ? removePlaceFromBasket(place.id) : addPlaceToBasket(place)
             }
-            className={`flex items-center justify-center gap-1 px-2 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex items-center justify-center gap-1 px-1.5 sm:px-2 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition cursor-pointer ${
               inBasket
                 ? 'bg-emerald-600 text-white'
                 : 'bg-sky-600 hover:bg-sky-500 text-white'
@@ -186,12 +186,12 @@ export default function PlaceCard({ place, showAiExplanations = false }) {
           >
             {inBasket ? (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                 <span>Added</span>
               </>
             ) : (
               <>
-                <PlusCircle className="w-3.5 h-3.5" />
+                <PlusCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>Add Trip</span>
               </>
             )}
@@ -201,9 +201,9 @@ export default function PlaceCard({ place, showAiExplanations = false }) {
             onClick={() =>
               navigate(`/map?lat=${place.latitude}&lon=${place.longitude}&name=${encodeURIComponent(place.name)}`)
             }
-            className="flex items-center justify-center gap-1 px-2 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+            className="flex items-center justify-center gap-1 px-1.5 sm:px-2 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] sm:text-xs font-bold transition cursor-pointer"
           >
-            <Navigation className="w-3.5 h-3.5 text-sky-400" />
+            <Navigation className="w-3.5 h-3.5 shrink-0 text-sky-400" />
             <span>On Map</span>
           </button>
         </div>

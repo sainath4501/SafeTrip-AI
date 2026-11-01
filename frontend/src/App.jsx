@@ -24,9 +24,9 @@ export default function App() {
     <AuthProvider>
       <TripProvider>
         <Router>
-          <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+          <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden md:overflow-x-visible">
             <Navbar />
-            <main className="flex-1">
+            <main className="flex-1 pb-20 md:pb-0">
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
@@ -48,7 +48,7 @@ export default function App() {
               </Routes>
             </main>
 
-            <footer className="bg-slate-950 text-slate-400 border-t border-slate-800 py-8 mt-16">
+            <footer className="bg-slate-950 text-slate-400 border-t border-slate-800 py-8 pb-24 md:pb-8 mt-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
                 <div>
                   <span className="font-extrabold text-white">SafeTrip AI</span> — An Intelligent AI-Based Indian Tourism Safety, Recommendation & Trip Planning System (MCA Major Project)

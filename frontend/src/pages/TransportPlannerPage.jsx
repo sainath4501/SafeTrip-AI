@@ -84,23 +84,23 @@ export default function TransportPlannerPage() {
   const metroStations = transportData?.metroStations || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold mb-2">
-          <Train className="w-3.5 h-3.5" />
-          Multi-Modal Local & Intercity Transport Intelligence ({cityList.length}+ All-India Cities)
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] sm:text-xs font-semibold mb-2 max-w-full truncate">
+          <Train className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Multi-Modal Local & Intercity Transport Intelligence ({cityList.length}+ Cities)</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
           Metro, Bus, Cab & Intercity Train / Flight Planner
         </h1>
-        <p className="text-slate-300 text-sm mt-1 max-w-3xl">
+        <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
           Station-to-station Metro routing, local Bus/Auto/Cab fare estimation, and intercity Train & Flight comparison across all 36 Indian States & Union Territories. All formula-computed fares are transparently labeled as <strong className="text-amber-300">Estimated Data</strong>.
         </p>
       </div>
 
       {/* Section 1: Local Multi-Modal Transport Calculator */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
           <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
             <Navigation className="w-5 h-5 text-teal-600" />

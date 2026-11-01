@@ -34,25 +34,25 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
       {/* Profile Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-2xl font-extrabold text-teal-300">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-xl sm:text-2xl font-extrabold text-teal-300 shrink-0">
             {(user?.full_name || 'Traveler')[0]}
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               Verified {user?.role || 'USER'} Account
             </div>
-            <h1 className="text-2xl font-extrabold">{user?.full_name || 'SafeTrip Traveler'}</h1>
-            <p className="text-slate-300 text-xs">{user?.email || 'user@safetrip.ai'}</p>
+            <h1 className="text-xl sm:text-2xl font-extrabold truncate">{user?.full_name || 'SafeTrip Traveler'}</h1>
+            <p className="text-slate-300 text-xs truncate">{user?.email || 'user@safetrip.ai'}</p>
           </div>
         </div>
         <Link
           to="/planner"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow transition"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow transition text-center shrink-0 cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
           Plan a New AI Trip

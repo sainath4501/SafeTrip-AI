@@ -86,24 +86,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 flex items-center justify-center px-4 py-10">
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-800/20">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-10 pb-24 md:pb-10">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-800/20">
         {/* Left Banner */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 p-8 sm:p-10 text-white flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 lg:p-10 text-white flex flex-col justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold mb-4 sm:mb-6">
               <ShieldCheck className="w-4 h-4 text-emerald-300" />
               <span>Join SafeTrip AI</span>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
               Create Your Personalized SafeTrip Profile
             </h1>
-            <p className="text-sm text-emerald-100/90 mt-3 leading-relaxed">
+            <p className="text-xs sm:text-sm text-emerald-100/90 mt-2.5 sm:mt-3 leading-relaxed">
               Customize your travel interests, starting city, and safety priorities so our hybrid AI engine can craft tailored day-by-day Indian itineraries.
             </p>
           </div>
 
-          <div className="space-y-3 mt-8 pt-6 border-t border-white/15 text-xs text-emerald-100">
+          <div className="space-y-3 mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/15 text-xs text-emerald-100">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
               <span>Save favorite monuments, forts, beaches & hill stations</span>
@@ -120,10 +120,10 @@ export default function RegisterPage() {
         </div>
 
         {/* Right Signup Form */}
-        <div className="lg:col-span-7 p-8 sm:p-10">
-          <div className="mb-5">
-            <h2 className="text-2xl font-extrabold text-slate-900">Sign Up for SafeTrip AI</h2>
-            <p className="text-sm text-slate-500 mt-1">
+        <div className="lg:col-span-7 p-5 sm:p-8 lg:p-10">
+          <div className="mb-4 sm:mb-5">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">Sign Up for SafeTrip AI</h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Already have an account?{' '}
               <Link to="/login" className="text-sky-600 font-bold hover:underline">
                 Sign In here

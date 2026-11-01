@@ -343,9 +343,9 @@ export default function AllIndiaCitySelect({
           setOpen((prev) => !prev);
           setFilterText('');
         }}
-        className="w-full pl-9 pr-8 py-3 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 font-bold text-slate-900 text-sm text-left flex items-center justify-between focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
+        className="relative w-full pl-9 pr-8 py-3 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 font-bold text-slate-900 text-sm text-left flex items-center justify-between focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
       >
-        <MapPin className={`w-4 h-4 text-${accentColor}-600 absolute left-3 top-[calc(50%+10px)] -translate-y-1/2 pointer-events-none`} />
+        <MapPin className={`w-4 h-4 text-${accentColor}-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
         <div className="truncate">
           <span className="font-extrabold text-slate-900">{value || placeholder}</span>
           {currentObj?.sublabel && (
@@ -358,7 +358,7 @@ export default function AllIndiaCitySelect({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden min-w-[260px]">
+        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden w-full max-w-full">
           {/* Search input inside dropdown */}
           <div className="p-2.5 border-b border-slate-100 bg-slate-50">
             <div className="relative">

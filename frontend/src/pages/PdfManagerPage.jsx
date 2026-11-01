@@ -123,17 +123,17 @@ export default function PdfManagerPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-semibold mb-2">
-          <FileText className="w-3.5 h-3.5" />
-          9-Step PDF Tourism Dataset Extraction, Validation & Approval Pipeline
+      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-[11px] sm:text-xs font-semibold mb-2 max-w-full truncate">
+          <FileText className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">9-Step PDF Dataset Extraction, Validation & Approval Pipeline</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold">
           PDF Dataset Ingestion & Human-in-the-Loop Verification
         </h1>
-        <p className="text-slate-300 text-sm mt-1 max-w-3xl">
+        <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
           Extracts structured Indian tourism records from PDF files (`pypdf`), validates coordinates/fees/hours, highlights anomalies, and requires explicit Admin approval before database insertion.
         </p>
       </div>
