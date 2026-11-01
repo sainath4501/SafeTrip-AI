@@ -24,7 +24,7 @@ export default function App() {
     <AuthProvider>
       <TripProvider>
         <Router>
-          <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-hidden md:overflow-x-visible">
+          <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 overflow-x-clip md:overflow-x-visible">
             <Navbar />
             <main className="flex-1 pb-20 md:pb-0">
               <Routes>

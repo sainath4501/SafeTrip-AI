@@ -345,7 +345,7 @@ export default function AllIndiaCitySelect({
         }}
         className="relative w-full pl-9 pr-8 py-3 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 font-bold text-slate-900 text-sm text-left flex items-center justify-between focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
       >
-        <MapPin className={`w-4 h-4 text-${accentColor}-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
+        <MapPin className={`w-4 h-4 ${accentColor === 'emerald' ? 'text-emerald-600' : 'text-sky-600'} absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
         <div className="truncate">
           <span className="font-extrabold text-slate-900">{value || placeholder}</span>
           {currentObj?.sublabel && (

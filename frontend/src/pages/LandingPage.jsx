@@ -116,7 +116,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="pb-16 sm:pb-20 overflow-x-hidden md:overflow-x-visible">
+    <div className="pb-16 sm:pb-20 overflow-x-clip md:overflow-x-visible">
       {/* HERO SECTION */}
       <section className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white pt-8 sm:pt-10 pb-16 sm:pb-24 px-3 sm:px-6 overflow-hidden md:overflow-visible">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(14,165,233,0.22),transparent_60%)] pointer-events-none" />
