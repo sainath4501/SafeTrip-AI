@@ -593,6 +593,55 @@ def _seed_all_india_master_districts(db: Session):
     db.commit()
 
 
+def _seed_all_india_transit(db: Session):
+    """
+    Seeds comprehensive real-world Metro Stations and Central Bus Terminals across India.
+    """
+    from app.database.all_india_transit_data import ALL_INDIA_METRO_STATIONS, ALL_INDIA_BUS_STOPS
+
+    existing_stations = {(s.city.strip().lower(), s.station_name.strip().lower()) for s in db.query(MetroStation).all()}
+    added_metro = 0
+    for item in ALL_INDIA_METRO_STATIONS:
+        key = (item["city"].strip().lower(), item["station"].strip().lower())
+        if key not in existing_stations:
+            db.add(MetroStation(
+                city=item["city"],
+                network_name=item["network"],
+                station_name=item["station"],
+                line_name=item["line"],
+                line_color=item.get("color", "#2563eb"),
+                station_order=item.get("order", 1),
+                latitude=item["lat"],
+                longitude=item["lon"],
+                is_interchange=item.get("is_interchange", False),
+                connected_lines=item.get("lines", ""),
+                nearby_attractions=item.get("attractions", ""),
+            ))
+            existing_stations.add(key)
+            added_metro += 1
+
+    existing_stops = {(b.city.strip().lower(), b.stop_name.strip().lower()) for b in db.query(BusStop).all()}
+    added_bus = 0
+    for item in ALL_INDIA_BUS_STOPS:
+        key = (item["city"].strip().lower(), item["stop"].strip().lower())
+        if key not in existing_stops:
+            db.add(BusStop(
+                city=item["city"],
+                stop_name=item["stop"],
+                operator=item.get("operator", "State Road Transport"),
+                routes_served=item.get("routes", "City Corridors"),
+                latitude=item["lat"],
+                longitude=item["lon"],
+                nearby_place=item.get("landmark", ""),
+            ))
+            existing_stops.add(key)
+            added_bus += 1
+
+    if added_metro > 0 or added_bus > 0:
+        db.commit()
+        print(f"Seeded {added_metro} new Metro Stations and {added_bus} new Bus Stops.")
+
+
 def seed_database(db: Session):
     """
     Populates the 22 database tables if not already seeded,
@@ -603,6 +652,7 @@ def seed_database(db: Session):
     if db.query(State).count() > 0 and db.query(TouristPlace).count() >= 50:
         _seed_all_india_cities_catalog(db)
         _seed_all_india_master_districts(db)
+        _seed_all_india_transit(db)
         # Ensure ML models exist
         if db.query(MlModelRecord).count() == 0:
             _seed_ml_models(db)

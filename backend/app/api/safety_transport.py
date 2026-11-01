@@ -9,6 +9,8 @@ from app.routing.engine import (
     analyze_safe_vs_shortest_route,
     calculate_local_transport_options,
     calculate_intercity_transport,
+    resolve_city_coordinates,
+    haversine_km,
     CITY_COORDINATES,
 )
 from app.safety.engine import compute_comprehensive_safety_risk
@@ -168,19 +170,34 @@ def analyze_route_endpoint(payload: RouteAnalyzeRequest, db: Session = Depends(g
     lat1, lon1 = payload.originLat, payload.originLon
     lat2, lon2 = payload.destLat, payload.destLon
 
+    clean_city = (payload.city or "Delhi").strip()
+    city_lat, city_lon = resolve_city_coordinates(clean_city, db=db)
+
     if lat1 is None or lon1 is None:
-        p1 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{payload.originName}%")).first()
+        p1 = (
+            db.query(TouristPlace)
+            .filter(TouristPlace.city.ilike(f"%{clean_city}%"), TouristPlace.name.ilike(f"%{payload.originName}%"))
+            .first()
+        )
+        if not p1:
+            p1 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{payload.originName}%")).first()
         if p1:
             lat1, lon1 = p1.latitude, p1.longitude
         else:
-            lat1, lon1 = 28.6129, 77.2295
+            lat1, lon1 = city_lat - 0.015, city_lon - 0.012
 
     if lat2 is None or lon2 is None:
-        p2 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{payload.destName}%")).first()
+        p2 = (
+            db.query(TouristPlace)
+            .filter(TouristPlace.city.ilike(f"%{clean_city}%"), TouristPlace.name.ilike(f"%{payload.destName}%"))
+            .first()
+        )
+        if not p2:
+            p2 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{payload.destName}%")).first()
         if p2:
             lat2, lon2 = p2.latitude, p2.longitude
         else:
-            lat2, lon2 = 28.6562, 77.2410
+            lat2, lon2 = city_lat + 0.020, city_lon + 0.016
 
     route_comparison = analyze_safe_vs_shortest_route(
         db=db,
@@ -216,10 +233,50 @@ def get_transport_options(
     travelers: int = Query(2),
     db: Session = Depends(get_db),
 ):
-    p1 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{origin}%")).first()
-    p2 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{destination}%")).first()
-    lat1, lon1 = (p1.latitude, p1.longitude) if p1 else (28.6129, 77.2295)
-    lat2, lon2 = (p2.latitude, p2.longitude) if p2 else (28.6562, 77.2410)
+    if hasattr(origin, "default"): origin = "India Gate"
+    if hasattr(destination, "default"): destination = "Red Fort"
+    if hasattr(city, "default"): city = "Delhi"
+    if hasattr(start_city, "default") or not isinstance(start_city, str): start_city = None
+    if hasattr(travelers, "default") or not isinstance(travelers, int): travelers = 2
+
+    clean_city = (city or "Delhi").strip()
+    city_lat, city_lon = resolve_city_coordinates(clean_city, db=db)
+
+    # Scoped query by city first to eliminate cross-state collisions
+    p1 = (
+        db.query(TouristPlace)
+        .filter(TouristPlace.city.ilike(f"%{clean_city}%"), TouristPlace.name.ilike(f"%{origin}%"))
+        .first()
+    )
+    if not p1:
+        p1 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{origin}%")).first()
+
+    p2 = (
+        db.query(TouristPlace)
+        .filter(TouristPlace.city.ilike(f"%{clean_city}%"), TouristPlace.name.ilike(f"%{destination}%"))
+        .first()
+    )
+    if not p2:
+        p2 = db.query(TouristPlace).filter(TouristPlace.name.ilike(f"%{destination}%")).first()
+
+    # Determine coordinates strictly within target city bounds
+    if p1 and p2:
+        d_cross = haversine_km(p1.latitude, p1.longitude, p2.latitude, p2.longitude)
+        if d_cross > 50.0:
+            lat1, lon1 = p1.latitude, p1.longitude
+            lat2, lon2 = city_lat + 0.025, city_lon + 0.015
+        else:
+            lat1, lon1 = p1.latitude, p1.longitude
+            lat2, lon2 = p2.latitude, p2.longitude
+    elif p1 and not p2:
+        lat1, lon1 = p1.latitude, p1.longitude
+        lat2, lon2 = city_lat + 0.028, city_lon + 0.018
+    elif p2 and not p1:
+        lat1, lon1 = city_lat - 0.022, city_lon - 0.015
+        lat2, lon2 = p2.latitude, p2.longitude
+    else:
+        lat1, lon1 = city_lat - 0.015, city_lon - 0.012
+        lat2, lon2 = city_lat + 0.020, city_lon + 0.016
 
     local_opts = calculate_local_transport_options(
         db=db,
@@ -229,7 +286,7 @@ def get_transport_options(
         lon1=lon1,
         lat2=lat2,
         lon2=lon2,
-        city=city,
+        city=clean_city,
         origin_metro=p1.nearest_metro if p1 else None,
         dest_metro=p2.nearest_metro if p2 else None,
         origin_bus=p1.nearest_bus_stop if p1 else None,
@@ -238,12 +295,27 @@ def get_transport_options(
 
     intercity_opts = calculate_intercity_transport(
         start_city=start_city or "Bangalore",
-        destination_city=city,
+        destination_city=clean_city,
         travelers=travelers,
+        db=db,
     )
 
-    metro_stations = db.query(MetroStation).filter(MetroStation.city.ilike(f"%{city}%")).all()
-    bus_stops = db.query(BusStop).filter(BusStop.city.ilike(f"%{city}%")).all()
+    metro_stations = (
+        db.query(MetroStation)
+        .filter(
+            (MetroStation.city.ilike(f"%{clean_city}%"))
+            | (MetroStation.city.ilike(f"%{clean_city.split()[0]}%"))
+        )
+        .all()
+    )
+    bus_stops = (
+        db.query(BusStop)
+        .filter(
+            (BusStop.city.ilike(f"%{clean_city}%"))
+            | (BusStop.city.ilike(f"%{clean_city.split()[0]}%"))
+        )
+        .all()
+    )
 
     return {
         "localTransport": local_opts,

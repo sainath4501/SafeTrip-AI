@@ -154,50 +154,145 @@ def calculate_local_transport_options(
     }
 
     # 2. Metro (for cities with Metro systems across India)
-    metro_cities = [
-        "delhi", "new delhi", "old delhi", "bangalore", "bengaluru", "mumbai", "chennai",
-        "hyderabad", "kolkata", "jaipur", "kochi", "agra", "lucknow", "pune", "ahmedabad",
-        "nagpur", "noida", "gurugram", "gurgaon", "kanpur", "indore", "bhopal", "patna", "surat",
-    ]
-    has_metro = any(mc in city.lower() for mc in metro_cities)
-    metro_fare = get_metro_fare(road_km)
-    metro_mins = max(10, int(round((road_km / TRANSPORT_FARE_CONFIG["metro"]["avg_speed_kmh"]) * 60)) + 8)
-    stations_count = max(2, int(round(road_km / 1.3)))
+    clean_city = (city or "Delhi").strip()
+    db_metro_stations = []
+    if db is not None:
+        db_metro_stations = (
+            db.query(MetroStation)
+            .filter(
+                (MetroStation.city.ilike(f"%{clean_city}%"))
+                | (MetroStation.city.ilike(f"%{clean_city.split()[0]}%"))
+            )
+            .all()
+        )
 
-    start_st = origin_metro or f"{origin_name.split()[0]} Metro Station"
-    end_st = dest_metro or f"{dest_name.split()[0]} Metro Station"
-    interchange = "Rajiv Chowk / Central Secretariat Interchange" if "delhi" in city.lower() and road_km > 5 else (
-        "Majestic (Nadaprabhu Kempegowda) Interchange" if city.lower() in ["bangalore", "bengaluru"] and road_km > 5 else "Direct Line (No Interchange)"
-    )
+    has_metro = len(db_metro_stations) > 0
+    metro_fare = get_metro_fare(road_km) if has_metro else 0
+    metro_mins = max(10, int(round((road_km / TRANSPORT_FARE_CONFIG["metro"]["avg_speed_kmh"]) * 60)) + 6) if has_metro else 0
+    stations_count = max(2, min(24, int(round(road_km / 1.35)))) if has_metro else 0
 
-    metro_opt = {
-        "mode": "Metro",
-        "available": has_metro,
-        "network": "Delhi Metro (DMRC)" if "delhi" in city.lower() else (
-            "Namma Metro (BMRCL)" if city.lower() in ["bangalore", "bengaluru"] else f"{city.title()} Metro Rail"
-        ),
-        "origin_station": start_st if has_metro else "N/A",
-        "destination_station": end_st if has_metro else "N/A",
-        "interchange": interchange if has_metro else "N/A",
-        "stations_count": stations_count if has_metro else 0,
-        "walking_distance_km": 0.6 if has_metro else 0.0,
-        "estimated_time_mins": metro_mins if has_metro else 0,
-        "estimated_fare_inr": metro_fare if has_metro else 0,
-        "fare_label": "Estimated fare (Metro Slab Dataset)",
-        "route_summary": f"{origin_name} → Walk 450m → {start_st} → ({stations_count} stops, {interchange}) → {end_st} → Walk 400m → {dest_name}" if has_metro else "Metro network not available in this town; use Bus/Auto/Cab.",
-    }
+    if has_metro:
+        closest_start_metro = min(
+            db_metro_stations,
+            key=lambda s: haversine_km(lat1, lon1, s.latitude, s.longitude),
+        )
+        walk_to_start_km = haversine_km(lat1, lon1, closest_start_metro.latitude, closest_start_metro.longitude)
+        walk_to_start_m = max(150, min(1200, int(round(walk_to_start_km * 1000))))
+
+        closest_end_metro = min(
+            db_metro_stations,
+            key=lambda s: haversine_km(lat2, lon2, s.latitude, s.longitude),
+        )
+        if closest_end_metro.id == closest_start_metro.id and len(db_metro_stations) > 1:
+            sorted_by_dest = sorted(
+                db_metro_stations,
+                key=lambda s: haversine_km(lat2, lon2, s.latitude, s.longitude),
+            )
+            closest_end_metro = sorted_by_dest[1]
+
+        walk_from_end_km = haversine_km(lat2, lon2, closest_end_metro.latitude, closest_end_metro.longitude)
+        walk_from_end_m = max(150, min(1200, int(round(walk_from_end_km * 1000))))
+
+        start_st = closest_start_metro.station_name
+        end_st = closest_end_metro.station_name
+        network_name = closest_start_metro.network_name
+
+        if closest_start_metro.line_name != closest_end_metro.line_name and not (
+            closest_start_metro.is_interchange or closest_end_metro.is_interchange
+        ):
+            interchange_st = next((s for s in db_metro_stations if s.is_interchange), None)
+            if interchange_st:
+                interchange = f"Transfer at {interchange_st.station_name} ({interchange_st.connected_lines or 'Corridor'})"
+            else:
+                interchange = "Direct Corridor Connection"
+        else:
+            interchange = "Direct Line (No Interchange)"
+
+        route_summary = (
+            f"{origin_name} → Walk {walk_to_start_m}m → {start_st} ({closest_start_metro.line_name}) "
+            f"→ [{stations_count} stops, {interchange}] → {end_st} ({closest_end_metro.line_name}) "
+            f"→ Walk {walk_from_end_m}m → {dest_name}"
+        )
+        metro_opt = {
+            "mode": "Metro",
+            "available": True,
+            "network": network_name,
+            "origin_station": start_st,
+            "destination_station": end_st,
+            "origin_line": closest_start_metro.line_name,
+            "dest_line": closest_end_metro.line_name,
+            "interchange": interchange,
+            "stations_count": stations_count,
+            "walking_distance_km": round((walk_to_start_m + walk_from_end_m) / 1000.0, 2),
+            "estimated_time_mins": metro_mins,
+            "estimated_fare_inr": metro_fare,
+            "fare_label": "Estimated fare (Metro Tariff Slab)",
+            "route_summary": route_summary,
+        }
+    else:
+        metro_opt = {
+            "mode": "Metro",
+            "available": False,
+            "network": "No Metro Rail Network",
+            "origin_station": "None",
+            "destination_station": "None",
+            "origin_line": "None",
+            "dest_line": "None",
+            "interchange": "None",
+            "stations_count": 0,
+            "walking_distance_km": 0.0,
+            "estimated_time_mins": 0,
+            "estimated_fare_inr": 0,
+            "fare_label": "Not Applicable",
+            "status_message": f"Metro rail service is currently not operational in {clean_city.title()}.",
+            "route_summary": f"Metro rail network is not available in {clean_city.title()}. Please use City Bus, Auto-Rickshaw, or App Cab for local transit.",
+        }
 
     # 3. City Bus
+    db_bus_stops = []
+    if db is not None:
+        db_bus_stops = (
+            db.query(BusStop)
+            .filter(
+                (BusStop.city.ilike(f"%{clean_city}%"))
+                | (BusStop.city.ilike(f"%{clean_city.split()[0]}%"))
+            )
+            .all()
+        )
+
     bus_fare = int(round(TRANSPORT_FARE_CONFIG["bus"]["base_fare"] + road_km * TRANSPORT_FARE_CONFIG["bus"]["per_km"]))
     bus_fare = max(10, min(60, (bus_fare // 5) * 5))
     bus_mins = max(12, int(round((road_km / TRANSPORT_FARE_CONFIG["bus"]["avg_speed_kmh"]) * 60)) + 6)
-    start_bus = origin_bus or f"{origin_name} Bus Stand"
-    end_bus = dest_bus or f"{dest_name} Bus Stop"
+
+    if db_bus_stops:
+        closest_start_bus = min(
+            db_bus_stops,
+            key=lambda b: haversine_km(lat1, lon1, b.latitude, b.longitude),
+        )
+        closest_end_bus = min(
+            db_bus_stops,
+            key=lambda b: haversine_km(lat2, lon2, b.latitude, b.longitude),
+        )
+        if closest_end_bus.id == closest_start_bus.id and len(db_bus_stops) > 1:
+            sorted_bus = sorted(
+                db_bus_stops,
+                key=lambda b: haversine_km(lat2, lon2, b.latitude, b.longitude),
+            )
+            closest_end_bus = sorted_bus[1]
+
+        start_bus = f"{closest_start_bus.stop_name} ({closest_start_bus.operator})"
+        end_bus = f"{closest_end_bus.stop_name} ({closest_end_bus.operator})"
+        route_str = f"{closest_start_bus.operator} Route {closest_start_bus.routes_served.split(',')[0]} / AC Feeder"
+    else:
+        start_bus = origin_bus or f"{clean_city} Central Transit Stand"
+        end_bus = dest_bus or f"{clean_city} City Circuit Stop"
+        route_str = f"{clean_city} City Express / Local Feeder"
+
     bus_opt = {
         "mode": "Bus",
         "nearest_stop": start_bus,
         "destination_stop": end_bus,
-        "bus_route": f"City Express Route {101 + int(road_km * 7) % 400} / AC Feeder",
+        "bus_route": route_str,
         "estimated_time_mins": bus_mins,
         "estimated_fare_inr": bus_fare,
         "ac_bus_fare_inr": int(round(bus_fare * 1.5)),
@@ -233,9 +328,22 @@ def calculate_local_transport_options(
         "fare_label": "Estimated fare (App Cab Tariff)",
     }
 
-    recommended_mode = "Walking" if road_km <= 1.2 else ("Metro" if has_metro and road_km >= 2.8 else "Auto / Cab")
-    recommended_cost = 0 if recommended_mode == "Walking" else (metro_fare if recommended_mode == "Metro" else auto_fare)
-    recommended_time = walk_mins if recommended_mode == "Walking" else (metro_mins if recommended_mode == "Metro" else auto_mins)
+    if road_km <= 1.2:
+        recommended_mode = "Walking"
+        recommended_cost = 0
+        recommended_time = walk_mins
+    elif has_metro and road_km >= 2.5:
+        recommended_mode = "Metro"
+        recommended_cost = metro_fare
+        recommended_time = metro_mins
+    elif road_km <= 5.0:
+        recommended_mode = "Auto Rickshaw"
+        recommended_cost = auto_fare
+        recommended_time = auto_mins
+    else:
+        recommended_mode = "City Bus / Cab"
+        recommended_cost = bus_fare
+        recommended_time = bus_mins
 
     return {
         "origin": origin_name,
@@ -255,13 +363,18 @@ def calculate_local_transport_options(
     }
 
 
-def calculate_intercity_transport(start_city: str, destination_city: str, travelers: int = 2) -> Dict[str, Any]:
+def calculate_intercity_transport(
+    start_city: str,
+    destination_city: str,
+    travelers: int = 2,
+    db: Optional[Session] = None,
+) -> Dict[str, Any]:
     """
     Section 14: Intercity Train + Flight + Bus Module.
     Separates LIVE DATA and ESTIMATED DATA clearly.
     """
-    c1 = resolve_city_coordinates(start_city)
-    c2 = resolve_city_coordinates(destination_city)
+    c1 = resolve_city_coordinates(start_city, db=db)
+    c2 = resolve_city_coordinates(destination_city, db=db)
 
     aerial_km = haversine_km(c1[0], c1[1], c2[0], c2[1])
     rail_road_km = round(aerial_km * 1.24, 1)

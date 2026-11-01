@@ -205,11 +205,10 @@ export default function InteractiveMapPage() {
   // When a specific city is selected (e.g. Ahmedabad with 7 places), strictly show only that city's places
   const dropdownPlaces = useMemo(() => {
     if (selectedCity && selectedCity !== '__all__' && places.length >= 2) {
+      return places;
+    }
+    if (selectedCity && selectedCity !== '__all__' && places.length === 1) {
       const list = [...places];
-      if (originId && !list.some((p) => String(p.id) === String(originId))) {
-        const op = selectablePlaces.find((p) => String(p.id) === String(originId));
-        if (op) list.push(op);
-      }
       if (destId && !list.some((p) => String(p.id) === String(destId))) {
         const dp = selectablePlaces.find((p) => String(p.id) === String(destId));
         if (dp) list.push(dp);
@@ -217,7 +216,7 @@ export default function InteractiveMapPage() {
       return list;
     }
     return selectablePlaces;
-  }, [places, selectedCity, selectablePlaces, originId, destId]);
+  }, [places, selectedCity, selectablePlaces, destId]);
 
   // 4. Fetch Tourist Places when selectedState or selectedCity changes
   useEffect(() => {
@@ -1677,32 +1676,40 @@ export default function InteractiveMapPage() {
               {routeComparison?.transport_modes ? (
                 <>
                   {/* Metro */}
-                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                  <div className={`rounded-2xl p-4 border shadow-xs ${routeComparison.transport_modes.metro?.available ? 'bg-white border-slate-200' : 'bg-slate-50/80 border-slate-200'}`}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold ${routeComparison.transport_modes.metro?.available ? 'bg-sky-100 text-sky-700' : 'bg-slate-200 text-slate-500'}`}>
                           <Train className="w-4 h-4" />
                         </div>
                         <div>
                           <span className="text-xs font-black text-slate-900">
-                            {routeComparison.transport_modes.metro.mode}
+                            {routeComparison.transport_modes.metro?.mode || 'Metro'} Rail
                           </span>
                           <span className="text-[11px] text-slate-500 block">
-                            {routeComparison.transport_modes.metro.network}
+                            {routeComparison.transport_modes.metro?.network}
                           </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-black text-sky-700 block">
-                          ₹{routeComparison.transport_modes.metro.estimated_fare_inr}
-                        </span>
-                        <span className="text-[10px] text-slate-500">
-                          {routeComparison.transport_modes.metro.estimated_time_mins} mins
-                        </span>
+                        {routeComparison.transport_modes.metro?.available ? (
+                          <>
+                            <span className="text-xs font-black text-sky-700 block">
+                              ₹{routeComparison.transport_modes.metro.estimated_fare_inr}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {routeComparison.transport_modes.metro.estimated_time_mins} mins
+                            </span>
+                          </>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">
+                            Not in City
+                          </span>
+                        )}
                       </div>
                     </div>
                     <p className="text-xs text-slate-600 mt-2">
-                      {routeComparison.transport_modes.metro.route_summary}
+                      {routeComparison.transport_modes.metro?.route_summary}
                     </p>
                   </div>
 

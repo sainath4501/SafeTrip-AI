@@ -82,6 +82,7 @@ export default function TransportPlannerPage() {
   const localOpts = transportData?.localTransport;
   const intercityOpts = transportData?.intercityTransport;
   const metroStations = transportData?.metroStations || [];
+  const busStops = transportData?.busStops || [];
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 space-y-6 sm:space-y-8 overflow-x-hidden md:overflow-x-visible">
@@ -178,23 +179,45 @@ export default function TransportPlannerPage() {
             {localOpts.options && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {/* Metro */}
-                <div className="rounded-2xl p-4 border border-teal-300 bg-teal-50/40">
+                <div className={`rounded-2xl p-4 border ${localOpts.options.metro?.available ? 'border-teal-300 bg-teal-50/40' : 'border-slate-200 bg-slate-50/70'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-extrabold text-slate-900 text-sm">Metro Rail</span>
-                    <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
-                      Estimated fare
-                    </span>
+                    {localOpts.options.metro?.available ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                        Estimated fare
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">
+                        Not in Service
+                      </span>
+                    )}
                   </div>
-                  <div className="text-2xl font-extrabold text-teal-700 mb-1">
-                    ₹{localOpts.options.metro?.estimated_fare_inr}
-                  </div>
-                  <div className="text-xs text-slate-600 space-y-1">
-                    <div><strong>Duration:</strong> {localOpts.options.metro?.estimated_time_mins} mins</div>
-                    <div><strong>Network:</strong> {localOpts.options.metro?.network}</div>
-                    <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60">
-                      {localOpts.options.metro?.route_summary}
-                    </div>
-                  </div>
+                  {localOpts.options.metro?.available ? (
+                    <>
+                      <div className="text-2xl font-extrabold text-teal-700 mb-1">
+                        ₹{localOpts.options.metro?.estimated_fare_inr}
+                      </div>
+                      <div className="text-xs text-slate-600 space-y-1">
+                        <div><strong>Duration:</strong> {localOpts.options.metro?.estimated_time_mins} mins</div>
+                        <div><strong>Network:</strong> {localOpts.options.metro?.network}</div>
+                        <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60">
+                          {localOpts.options.metro?.route_summary}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xl font-bold text-slate-400 mb-1">
+                        Unavailable
+                      </div>
+                      <div className="text-xs text-slate-500 space-y-1">
+                        <div><strong>Network:</strong> No Metro in {city}</div>
+                        <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60">
+                          {localOpts.options.metro?.route_summary || `Metro network is not operational in ${city}. Please use City Bus, Auto, or Cab.`}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Bus */}
@@ -353,30 +376,57 @@ export default function TransportPlannerPage() {
         )}
       </div>
 
-      {/* Section 3: Seeded Metro Stations Reference */}
-      {metroStations.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 mb-4">
-            <Train className="w-5 h-5 text-teal-600" />
-            3. Verified Metro Station Directory in {city} ({metroStations.length} Stations)
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {metroStations.map((st) => (
-              <div key={st.id} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-xs">
-                <div className="font-bold text-slate-900">{st.stationName}</div>
-                <div className="text-teal-700 font-semibold mt-0.5">{st.lineName} • {st.network}</div>
-                <div className="text-slate-500 mt-1">
-                  {st.isInterchange ? (
-                    <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-semibold">
-                      Interchange: {st.connectedLines}
-                    </span>
-                  ) : (
-                    <span>Attractions: {st.nearbyAttractions}</span>
-                  )}
-                </div>
+      {/* Section 3: Verified Transit Stations & Bus Hubs Directory */}
+      {(metroStations.length > 0 || busStops.length > 0) && (
+        <div className="space-y-6">
+          {metroStations.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <Train className="w-5 h-5 text-teal-600" />
+                3. Verified Metro Station Directory in {city} ({metroStations.length} Stations)
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {metroStations.map((st) => (
+                  <div key={st.id} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-xs">
+                    <div className="font-bold text-slate-900">{st.stationName}</div>
+                    <div className="text-teal-700 font-semibold mt-0.5">{st.lineName} • {st.network}</div>
+                    <div className="text-slate-500 mt-1">
+                      {st.isInterchange ? (
+                        <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-semibold">
+                          Interchange: {st.connectedLines}
+                        </span>
+                      ) : (
+                        <span>Attractions: {st.nearbyAttractions}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {busStops.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <Bus className="w-5 h-5 text-amber-600" />
+                {metroStations.length > 0 ? '4' : '3'}. Verified Central Bus Transit Hubs & Terminals in {city} ({busStops.length} Hubs)
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {busStops.map((bs) => (
+                  <div key={bs.id} className="p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/40 text-xs">
+                    <div className="font-bold text-slate-900">{bs.stopName}</div>
+                    <div className="text-amber-800 font-semibold mt-0.5">Operator: {bs.operator}</div>
+                    <div className="text-slate-600 mt-1">
+                      <div><strong>Routes:</strong> {bs.routes}</div>
+                      {bs.nearbyPlace && (
+                        <div className="text-slate-500 text-[11px] mt-0.5"><strong>Landmark:</strong> {bs.nearbyPlace}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
