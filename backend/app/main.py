@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.db import Base, engine, SessionLocal
 from app.database.seed import seed_database
+from app.models.entities import District
 from app.api import auth, places, recommendations, safety_transport, admin_ml_pdf
 
 
@@ -12,6 +13,12 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_database(db)
+        if db.query(District).count() < 500:
+            try:
+                from generate_all_districts_places import main as seed_all_districts
+                seed_all_districts()
+            except Exception as e:
+                print(f"Auto-enrichment note: {e}")
     finally:
         db.close()
     yield

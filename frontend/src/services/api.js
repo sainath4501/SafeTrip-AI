@@ -68,7 +68,13 @@ export const api = {
   getCities: (state = '') =>
     apiRequest(`/api/cities${state ? `?state=${encodeURIComponent(state)}` : ''}`),
   getStateDistricts: (stateId) => apiRequest(`/api/states/${stateId}/districts`),
-
+  getDistricts: (params = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.append(k, v);
+    });
+    return apiRequest(`/api/districts?${qs.toString()}`);
+  },
   getDistrictPlaces: (districtId) => apiRequest(`/api/districts/${districtId}/places`),
   searchPlaces: (params = {}) => {
     const qs = new URLSearchParams();

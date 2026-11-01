@@ -187,6 +187,47 @@ def list_state_districts(state_id: int, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/districts")
+def list_all_districts(
+    state_id: Optional[int] = None,
+    state: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = Query(default=1000, le=2000),
+    db: Session = Depends(get_db)
+):
+    limit_val = limit if isinstance(limit, int) else 1000
+    query = db.query(District, State.name.label("state_name")).join(State, District.state_id == State.id)
+    if state_id:
+        query = query.filter(District.state_id == state_id)
+    if state and state.strip():
+        query = query.filter(State.name.ilike(f"%{state.strip()}%"))
+    if search and search.strip():
+        query = query.filter(District.name.ilike(f"%{search.strip()}%"))
+    
+    rows = query.order_by(State.name.asc(), District.name.asc()).limit(limit_val).all()
+    place_counts = dict(
+        db.query(TouristPlace.district_id, func.count(TouristPlace.id)).group_by(TouristPlace.district_id).all()
+    )
+    return {
+        "total": len(rows),
+        "districts": [
+            {
+                "id": d.id,
+                "name": d.name,
+                "state_id": d.state_id,
+                "state_name": state_name,
+                "latitude": d.latitude,
+                "longitude": d.longitude,
+                "crimeIndex": d.crime_index,
+                "safetyTier": d.safety_tier,
+                "description": d.description,
+                "placesCount": place_counts.get(d.id, 0),
+            }
+            for d, state_name in rows
+        ]
+    }
+
+
 @router.get("/districts/{district_id}/places")
 def list_district_places(district_id: int, db: Session = Depends(get_db)):
     dist = db.query(District).filter(District.id == district_id).first()
