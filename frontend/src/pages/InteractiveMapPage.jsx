@@ -177,6 +177,16 @@ export default function InteractiveMapPage() {
     }
   };
 
+  // Combined list of selectable places so dropdowns never lose options
+  const selectablePlaces = useMemo(() => {
+    const map = new Map();
+    places.forEach((p) => map.set(String(p.id), p));
+    allStatePlaces.forEach((p) => {
+      if (!map.has(String(p.id))) map.set(String(p.id), p);
+    });
+    return Array.from(map.values());
+  }, [places, allStatePlaces]);
+
   // 4. Fetch Tourist Places when selectedState or selectedCity changes
   useEffect(() => {
     const params = { limit: 600 };
@@ -190,19 +200,30 @@ export default function InteractiveMapPage() {
       // Also keep a copy of state places if state is selected
       if (selectedState && selectedCity && selectedCity !== '__all__') {
         api.searchPlaces({ state: selectedState, limit: 600 }).then((sRes) => {
-          setAllStatePlaces(sRes.places || []);
+          const sItems = sRes.places || [];
+          setAllStatePlaces(sItems);
+          if (items.length === 1 && sItems.length > 1) {
+            const alt = sItems.find((p) => String(p.id) !== String(items[0].id));
+            if (alt) setDestId(String(alt.id));
+          }
         }).catch(() => {});
       } else {
         setAllStatePlaces(items);
       }
 
-      // Auto-set Origin and Destination within the selected city or state
+      // Auto-set distinct Origin and Destination within the selected city or state
       if (items.length >= 2) {
         setOriginId(String(items[0].id));
         setDestId(String(items[1].id));
       } else if (items.length === 1) {
         setOriginId(String(items[0].id));
-        setDestId(String(items[0].id));
+        // Search all state places to ensure distinct destination
+        const alt = allStatePlaces.find((p) => String(p.id) !== String(items[0].id));
+        if (alt) {
+          setDestId(String(alt.id));
+        } else {
+          setDestId(String(items[0].id));
+        }
         if (mapInstanceRef.current && items[0].latitude && items[0].longitude) {
           mapInstanceRef.current.flyTo([items[0].latitude, items[0].longitude], 13);
         }
@@ -267,16 +288,12 @@ export default function InteractiveMapPage() {
 
   // 6. Compute Route Comparison (Route A vs Route B)
   const handleCompareRoutes = async () => {
-    const origin = (places.length ? places : allStatePlaces).find(
-      (p) => String(p.id) === String(originId)
-    );
-    const dest = (places.length ? places : allStatePlaces).find(
-      (p) => String(p.id) === String(destId)
-    );
+    const origin = selectablePlaces.find((p) => String(p.id) === String(originId));
+    const dest = selectablePlaces.find((p) => String(p.id) === String(destId));
     if (!origin || !dest) return;
 
-    if (origin.id === dest.id) {
-      setRouteError('Origin and Destination are identical. Please select different starting and destination places to compare routes.');
+    if (String(origin.id) === String(dest.id)) {
+      setRouteError('Origin (A) and Destination (B) are identical. Please select different starting and destination places to compare routes.');
       return;
     }
 
@@ -294,6 +311,150 @@ export default function InteractiveMapPage() {
         weatherCondition: 'Clear',
         hour: Number(travelHour),
       });
+
+      // Browser-direct OSRM enrichment for high-definition road curves
+      if (origin.latitude && origin.longitude && dest.latitude && dest.longitude) {
+        try {
+          const directUrl = `https://router.project-osrm.org/route/v1/driving/${origin.longitude},${origin.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson&steps=true&alternatives=true`;
+          const osrmResp = await fetch(directUrl, { signal: AbortSignal.timeout(4000) });
+          if (osrmResp.ok) {
+            const osrmData = await osrmResp.json();
+            if (osrmData.routes && osrmData.routes.length > 0) {
+              const r0 = osrmData.routes[0];
+              data.route_a.coordinates = r0.geometry.coordinates.map((c) => [c[1], c[0]]);
+              data.route_a.distance_km = Number((r0.distance / 1000).toFixed(2));
+              if (r0.legs && r0.legs[0]?.steps?.length) {
+                data.route_a.steps = r0.legs[0].steps.map((st) => ({
+                  instruction: st.maneuver.instruction || `${st.maneuver.type} onto ${st.name || 'Road'}`,
+                  street: st.name || 'City Road',
+                  distance_label: st.distance >= 1000 ? `${(st.distance / 1000).toFixed(1)} km` : `${Math.round(st.distance)} m`,
+                  duration_label: `${Math.max(1, Math.round(st.duration / 60))} min`,
+                  location: [st.maneuver.location[1], st.maneuver.location[0]],
+                  type: st.maneuver.type,
+                  modifier: st.maneuver.modifier,
+                }));
+              }
+
+              let gotDistinctB = false;
+
+              if (osrmData.routes.length > 1) {
+                const r1 = osrmData.routes[1];
+                const dist1 = Number((r1.distance / 1000).toFixed(2));
+                // Only use direct alternative if distance or path differs from Route A
+                if (Math.abs(dist1 - data.route_a.distance_km) >= 0.15 || r1.geometry.coordinates.length !== r0.geometry.coordinates.length) {
+                  data.route_b.coordinates = r1.geometry.coordinates.map((c) => [c[1], c[0]]);
+                  data.route_b.distance_km = dist1;
+                  if (r1.legs && r1.legs[0]?.steps?.length) {
+                    data.route_b.steps = r1.legs[0].steps.map((st) => ({
+                      instruction: st.maneuver.instruction || `${st.maneuver.type} onto ${st.name || 'Arterial Road'}`,
+                      street: st.name || 'Arterial Corridor',
+                      distance_label: st.distance >= 1000 ? `${(st.distance / 1000).toFixed(1)} km` : `${Math.round(st.distance)} m`,
+                      duration_label: `${Math.max(1, Math.round(st.duration / 60))} min`,
+                      location: [st.maneuver.location[1], st.maneuver.location[0]],
+                      type: st.maneuver.type,
+                      modifier: st.maneuver.modifier,
+                    }));
+                  }
+                  gotDistinctB = true;
+                }
+              }
+
+              if (!gotDistinctB) {
+                // Compute Route B via perpendicular arterial waypoint
+                const dLat = dest.latitude - origin.latitude;
+                const dLon = dest.longitude - origin.longitude;
+                const mag = Math.sqrt(dLat * dLat + dLon * dLon);
+                if (mag > 0) {
+                  const perpLat = -dLon / mag;
+                  const perpLon = dLat / mag;
+                  const scale = Math.min(0.065, Math.max(0.015, mag * 0.22));
+
+                  // Try side 1 (positive offset)
+                  const midLat1 = (origin.latitude + dest.latitude) / 2 + perpLat * scale;
+                  const midLon1 = (origin.longitude + dest.longitude) / 2 + perpLon * scale;
+                  const urlB1 = `https://router.project-osrm.org/route/v1/driving/${origin.longitude},${origin.latitude};${midLon1.toFixed(5)},${midLat1.toFixed(5)};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson&steps=true`;
+
+                  try {
+                    const respB1 = await fetch(urlB1, { signal: AbortSignal.timeout(3500) });
+                    if (respB1.ok) {
+                      const dataB1 = await respB1.json();
+                      if (dataB1.routes && dataB1.routes.length > 0) {
+                        const rb1 = dataB1.routes[0];
+                        const distB1 = Number((rb1.distance / 1000).toFixed(2));
+                        if (distB1 >= data.route_a.distance_km * 0.98) {
+                          data.route_b.coordinates = rb1.geometry.coordinates.map((c) => [c[1], c[0]]);
+                          data.route_b.distance_km = distB1;
+                          if (rb1.legs) {
+                            const allSteps = [];
+                            rb1.legs.forEach((leg) => {
+                              if (leg.steps) {
+                                leg.steps.forEach((st) => {
+                                  allSteps.push({
+                                    instruction: st.maneuver.instruction || `${st.maneuver.type} onto ${st.name || 'Corridor'}`,
+                                    street: st.name || 'Ring Arterial Highway',
+                                    distance_label: st.distance >= 1000 ? `${(st.distance / 1000).toFixed(1)} km` : `${Math.round(st.distance)} m`,
+                                    duration_label: `${Math.max(1, Math.round(st.duration / 60))} min`,
+                                    location: [st.maneuver.location[1], st.maneuver.location[0]],
+                                    type: st.maneuver.type,
+                                    modifier: st.maneuver.modifier,
+                                  });
+                                });
+                              }
+                            });
+                            if (allSteps.length > 0) data.route_b.steps = allSteps;
+                          }
+                          gotDistinctB = true;
+                        }
+                      }
+                    }
+                  } catch (e1) {}
+
+                  // If side 1 failed or didn't provide distinct route, try side 2 (negative offset)
+                  if (!gotDistinctB) {
+                    const midLat2 = (origin.latitude + dest.latitude) / 2 - perpLat * scale;
+                    const midLon2 = (origin.longitude + dest.longitude) / 2 - perpLon * scale;
+                    const urlB2 = `https://router.project-osrm.org/route/v1/driving/${origin.longitude},${origin.latitude};${midLon2.toFixed(5)},${midLat2.toFixed(5)};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson&steps=true`;
+                    try {
+                      const respB2 = await fetch(urlB2, { signal: AbortSignal.timeout(3500) });
+                      if (respB2.ok) {
+                        const dataB2 = await respB2.json();
+                        if (dataB2.routes && dataB2.routes.length > 0) {
+                          const rb2 = dataB2.routes[0];
+                          data.route_b.coordinates = rb2.geometry.coordinates.map((c) => [c[1], c[0]]);
+                          data.route_b.distance_km = Number((rb2.distance / 1000).toFixed(2));
+                          if (rb2.legs) {
+                            const allSteps2 = [];
+                            rb2.legs.forEach((leg) => {
+                              if (leg.steps) {
+                                leg.steps.forEach((st) => {
+                                  allSteps2.push({
+                                    instruction: st.maneuver.instruction || `${st.maneuver.type} onto ${st.name || 'Corridor'}`,
+                                    street: st.name || 'Ring Arterial Highway',
+                                    distance_label: st.distance >= 1000 ? `${(st.distance / 1000).toFixed(1)} km` : `${Math.round(st.distance)} m`,
+                                    duration_label: `${Math.max(1, Math.round(st.duration / 60))} min`,
+                                    location: [st.maneuver.location[1], st.maneuver.location[0]],
+                                    type: st.maneuver.type,
+                                    modifier: st.maneuver.modifier,
+                                  });
+                                });
+                              }
+                            });
+                            if (allSteps2.length > 0) data.route_b.steps = allSteps2;
+                          }
+                          gotDistinctB = true;
+                        }
+                      }
+                    } catch (e2) {}
+                  }
+                }
+              }
+            }
+          }
+        } catch (fetchErr) {
+          // If direct fetch fails, backend's high-fidelity curved coordinates and steps are preserved
+        }
+      }
+
       setRouteComparison(data);
       setActiveRouteTab('route_b'); // Default to AI recommended route
     } catch (err) {
@@ -306,7 +467,7 @@ export default function InteractiveMapPage() {
 
   // Re-run route comparison whenever origin, destination, or travelHour changes
   useEffect(() => {
-    if (originId && destId && originId !== destId && places.length >= 1) {
+    if (originId && destId && originId !== destId && selectablePlaces.length >= 2) {
       handleCompareRoutes();
     }
   }, [originId, destId, travelHour]);
@@ -327,8 +488,8 @@ export default function InteractiveMapPage() {
     group.clearLayers();
     const boundsPoints = [];
 
-    const originPlace = places.find((p) => String(p.id) === String(originId));
-    const destPlace = places.find((p) => String(p.id) === String(destId));
+    const originPlace = selectablePlaces.find((p) => String(p.id) === String(originId));
+    const destPlace = selectablePlaces.find((p) => String(p.id) === String(destId));
 
     // Render Tourist Places Markers
     if (layers.places) {
@@ -339,7 +500,13 @@ export default function InteractiveMapPage() {
             p.subCategory?.some((s) => s.toLowerCase().includes(selectedCategoryChip.toLowerCase()))
           );
 
-      filteredPlaces.forEach((p) => {
+      // ALWAYS render origin and destination markers even if filtered out by category!
+      const placesToRender = new Map();
+      filteredPlaces.forEach((p) => placesToRender.set(String(p.id), p));
+      if (originPlace) placesToRender.set(String(originPlace.id), originPlace);
+      if (destPlace) placesToRender.set(String(destPlace.id), destPlace);
+
+      placesToRender.forEach((p) => {
         if (!p.latitude || !p.longitude) return;
         const isOrigin = String(p.id) === String(originId);
         const isDest = String(p.id) === String(destId);
@@ -794,10 +961,17 @@ export default function InteractiveMapPage() {
             </label>
             <select
               value={originId}
-              onChange={(e) => setOriginId(e.target.value)}
+              onChange={(e) => {
+                const newOrigin = e.target.value;
+                setOriginId(newOrigin);
+                if (newOrigin === destId) {
+                  const alt = selectablePlaces.find((p) => String(p.id) !== String(newOrigin));
+                  if (alt) setDestId(String(alt.id));
+                }
+              }}
               className="w-full rounded-xl border border-emerald-300 px-3 py-2.5 text-xs font-bold bg-emerald-50/50 text-emerald-950 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
-              {(places.length > 0 ? places : allStatePlaces).map((p) => (
+              {selectablePlaces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.city})
                 </option>
@@ -824,10 +998,17 @@ export default function InteractiveMapPage() {
             </div>
             <select
               value={destId}
-              onChange={(e) => setDestId(e.target.value)}
+              onChange={(e) => {
+                const newDest = e.target.value;
+                setDestId(newDest);
+                if (newDest === originId) {
+                  const alt = selectablePlaces.find((p) => String(p.id) !== String(newDest));
+                  if (alt) setOriginId(String(alt.id));
+                }
+              }}
               className="w-full rounded-xl border border-rose-300 px-3 py-2.5 text-xs font-bold bg-rose-50/50 text-rose-950 focus:ring-2 focus:ring-rose-500 focus:outline-none"
             >
-              {(places.length > 0 ? places : allStatePlaces).map((p) => (
+              {selectablePlaces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.city})
                 </option>
