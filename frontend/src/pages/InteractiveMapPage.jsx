@@ -201,6 +201,24 @@ export default function InteractiveMapPage() {
     return Array.from(map.values());
   }, [places, allStatePlaces]);
 
+  // Scoped list for From (A) and To (B) dropdowns:
+  // When a specific city is selected (e.g. Ahmedabad with 7 places), strictly show only that city's places
+  const dropdownPlaces = useMemo(() => {
+    if (selectedCity && selectedCity !== '__all__' && places.length >= 2) {
+      const list = [...places];
+      if (originId && !list.some((p) => String(p.id) === String(originId))) {
+        const op = selectablePlaces.find((p) => String(p.id) === String(originId));
+        if (op) list.push(op);
+      }
+      if (destId && !list.some((p) => String(p.id) === String(destId))) {
+        const dp = selectablePlaces.find((p) => String(p.id) === String(destId));
+        if (dp) list.push(dp);
+      }
+      return list;
+    }
+    return selectablePlaces;
+  }, [places, selectedCity, selectablePlaces, originId, destId]);
+
   // 4. Fetch Tourist Places when selectedState or selectedCity changes
   useEffect(() => {
     const params = { limit: 600 };
@@ -1061,13 +1079,13 @@ export default function InteractiveMapPage() {
                 const newOrigin = e.target.value;
                 setOriginId(newOrigin);
                 if (newOrigin === destId) {
-                  const alt = selectablePlaces.find((p) => String(p.id) !== String(newOrigin));
+                  const alt = dropdownPlaces.find((p) => String(p.id) !== String(newOrigin));
                   if (alt) setDestId(String(alt.id));
                 }
               }}
               className="w-full rounded-xl border border-emerald-300 px-3 py-2.5 text-xs font-bold bg-emerald-50/50 text-emerald-950 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
-              {selectablePlaces.map((p) => (
+              {dropdownPlaces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.city})
                 </option>
@@ -1098,13 +1116,13 @@ export default function InteractiveMapPage() {
                 const newDest = e.target.value;
                 setDestId(newDest);
                 if (newDest === originId) {
-                  const alt = selectablePlaces.find((p) => String(p.id) !== String(newDest));
+                  const alt = dropdownPlaces.find((p) => String(p.id) !== String(newDest));
                   if (alt) setOriginId(String(alt.id));
                 }
               }}
               className="w-full rounded-xl border border-rose-300 px-3 py-2.5 text-xs font-bold bg-rose-50/50 text-rose-950 focus:ring-2 focus:ring-rose-500 focus:outline-none"
             >
-              {selectablePlaces.map((p) => (
+              {dropdownPlaces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.city})
                 </option>
