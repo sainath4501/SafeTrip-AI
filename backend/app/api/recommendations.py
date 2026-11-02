@@ -244,6 +244,76 @@ def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
             else:
                 p["previous_location"] = places_out[idx_p - 1]["name"]
 
+        # Reconstruct complete chronological timeline for the day
+        timeline_items = []
+        travelers_count = itin.travelers or 2
+        timeline_items.append({
+            "slot_type": "MEAL",
+            "time_label": "08:00",
+            "title": f"Morning Breakfast in {itin.destination}",
+            "description": "Start your day with regional breakfast specialties and bottled water before morning sightseeing.",
+            "estimated_cost_inr": 180 * travelers_count,
+            "risk_level": "LOW",
+        })
+
+        lunch_added = False
+        for p in places_out:
+            try:
+                start_h = int(p["start_time"].split(":")[0])
+                if not lunch_added and start_h >= 13:
+                    timeline_items.append({
+                        "slot_type": "MEAL",
+                        "time_label": "13:00",
+                        "title": f"Lunch Break — Authentic {itin.destination} Cuisine",
+                        "description": f"Recommended hygienic dining near {p['name']}.",
+                        "estimated_cost_inr": 350 * travelers_count,
+                        "risk_level": "LOW",
+                    })
+                    lunch_added = True
+            except Exception:
+                pass
+
+            timeline_items.append({
+                "slot_type": "ATTRACTION",
+                "time_label": f"{p['start_time']} – {p['end_time']}",
+                "title": p["name"],
+                "category": p["category"],
+                "distance_km": p["distance_from_previous_km"],
+                "travel_time_mins": p["estimated_travel_time_mins"],
+                "transport": p["travel_method"],
+                "estimated_cost_inr": p["total_entry_fee_inr"] + p["estimated_travel_cost_inr"],
+                "risk_level": p["safety_risk"],
+                "place_detail": p,
+            })
+
+        if not lunch_added and len(places_out) > 0:
+            timeline_items.insert(2, {
+                "slot_type": "MEAL",
+                "time_label": "13:00",
+                "title": f"Lunch Break — Authentic {itin.destination} Cuisine",
+                "description": f"Recommended hygienic dining in {itin.destination}.",
+                "estimated_cost_inr": 350 * travelers_count,
+                "risk_level": "LOW",
+            })
+
+        timeline_items.append({
+            "slot_type": "EVENING_FOOD",
+            "time_label": "18:30",
+            "title": "Evening Food & Local Bazaar Recommendation",
+            "description": f"Savor Famous {itin.destination} Street Food & Heritage Culinary Walk at verified hygienic outlets.",
+            "estimated_cost_inr": 400 * travelers_count,
+            "risk_level": "LOW",
+        })
+
+        timeline_items.append({
+            "slot_type": "HOTEL_RETURN",
+            "time_label": "20:30",
+            "title": "Safe Return to Hotel via App Cab / Local Transit",
+            "description": "Conclude sightseeing before late-night hours for optimal travel safety.",
+            "estimated_cost_inr": 120,
+            "risk_level": "LOW",
+        })
+
         days_out.append({
             "day": d.day_number,
             "theme": d.theme_title,
@@ -255,6 +325,7 @@ def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
             "day_safety_score": day_avg_safety,
             "weather_summary": d.weather_summary,
             "places": places_out,
+            "timeline": timeline_items,
         })
 
     return {

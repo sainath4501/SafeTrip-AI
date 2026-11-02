@@ -14,7 +14,7 @@ export default function UserDashboardPage() {
   const [trips, setTrips] = useState([]);
 
   useEffect(() => {
-    api.getUserTrips().then((res) => setTrips(res.trips || [])).catch(() => {});
+    api.getUserTrips().then((res) => setTrips(res.trips || [])).catch(() => { });
   }, []);
 
   const handleDownloadPdf = async (tripId, title) => {

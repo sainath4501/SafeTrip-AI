@@ -1,9 +1,10 @@
 import json
+import math
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from app.config import DEFAULT_RECOMMENDATION_WEIGHTS
-from app.models.entities import TouristPlace, Hotel, Restaurant
+from app.models.entities import TouristPlace, Hotel, Restaurant, MetroStation
 from app.routing.engine import (
     haversine_km,
     calculate_local_transport_options,
@@ -43,14 +44,44 @@ def rank_tourist_places(
     pref_lower = (travel_preference or "").lower()
 
     query = db.query(TouristPlace)
-    if destination and destination.strip():
-        dest = destination.strip()
+    dest_clean = (destination or "").split("(")[0].strip()
+    if dest_clean:
         matched = query.filter(
-            (TouristPlace.city.ilike(f"%{dest}%"))
-            | (TouristPlace.state.ilike(f"%{dest}%"))
-            | (TouristPlace.district.ilike(f"%{dest}%"))
-            | (TouristPlace.name.ilike(f"%{dest}%"))
+            (TouristPlace.city.ilike(f"%{dest_clean}%"))
+            | (TouristPlace.district.ilike(f"%{dest_clean}%"))
+            | (TouristPlace.state.ilike(f"%{dest_clean}%"))
+            | (TouristPlace.name.ilike(f"%{dest_clean}%"))
         ).all()
+
+        # If matches are fewer than needed for a multi-day itinerary, enrich from the parent state & nearby districts
+        min_required = max(10, days * 3)
+        if len(matched) < min_required:
+            parent_state = None
+            if matched:
+                parent_state = matched[0].state
+            else:
+                from app.models.entities import State
+                st_match = db.query(State).filter(
+                    (State.name.ilike(f"%{dest_clean}%")) | (State.capital.ilike(f"%{dest_clean}%"))
+                ).first()
+                if st_match:
+                    parent_state = st_match.name
+
+            if parent_state:
+                state_places = db.query(TouristPlace).filter(
+                    TouristPlace.state.ilike(f"%{parent_state}%")
+                ).all()
+                from app.routing.engine import resolve_city_coordinates
+                ref_coords = resolve_city_coordinates(dest_clean, db)
+                state_places.sort(key=lambda p: haversine_km(ref_coords[0], ref_coords[1], p.latitude, p.longitude))
+                seen_ids = {p.id for p in matched}
+                for sp in state_places:
+                    if sp.id not in seen_ids:
+                        seen_ids.add(sp.id)
+                        matched.append(sp)
+                        if len(matched) >= min_required:
+                            break
+
         if not matched:
             matched = query.all()
     elif state and state.strip():
@@ -61,9 +92,11 @@ def rank_tourist_places(
         matched = query.all()
 
     start_coords = CITY_COORDINATES.get(start_location.strip().lower(), (12.9716, 77.5946))
-    ref_lat = matched[0].latitude if matched else 28.6139
-    ref_lon = matched[0].longitude if matched else 77.2090
-    ref_city = matched[0].city if matched else (destination or "Delhi")
+    from app.routing.engine import resolve_city_coordinates
+    dest_coords = resolve_city_coordinates(dest_clean or "Delhi", db)
+    ref_lat = dest_coords[0] if dest_coords else (matched[0].latitude if matched else 28.6139)
+    ref_lon = dest_coords[1] if dest_coords else (matched[0].longitude if matched else 77.2090)
+    ref_city = dest_clean if dest_clean else (matched[0].city if matched else "Delhi")
 
     weather_info = fetch_weather_for_coordinates(ref_lat, ref_lon, city=ref_city, travel_date=travel_date)
     per_person_daily_budget = max(500.0, budget / max(1, days * max(1, travelers)))
@@ -321,16 +354,13 @@ def generate_dynamic_day_wise_itinerary(
     weather_info = rec_bundle["weather_context"]
     resolved_dest = rec_bundle["destination"]
 
-    # Select top places needed (3 to 4 attractions per day)
-    places_per_day = 3 if days >= 3 else 4
-    needed = min(len(candidates), max(days * places_per_day, days))
-    pool = candidates[: max(needed, len(candidates))]
+    # Select top places needed (2 to 4 attractions per day)
+    target_needed = max(days * 2, min(len(candidates), days * 3))
+    pool = candidates[: max(target_needed, len(candidates))]
+    if not pool:
+        pool = candidates
 
     # Geographic sorting & clustering so places on the same day are spatially close!
-    # For Delhi 3-day canonical flow or any multi-day city, cluster by geographic zones:
-    # Central/New Delhi (India Gate, Rashtrapati Bhavan, War Memorial, Connaught Place)
-    # Old Delhi + Mughal Hub (Red Fort, Jama Masjid, Chandni Chowk, Humayun's Tomb)
-    # South/East Delhi (Qutub Minar, Lotus Temple, Akshardham)
     unvisited = list(pool)
     day_clusters: List[List[Dict[str, Any]]] = []
 
@@ -356,7 +386,10 @@ def generate_dynamic_day_wise_itinerary(
             if c:
                 day_clusters.append(c)
 
-    # Greedy nearest-neighbor spatial clustering for any remaining days or other cities
+    # Dynamic spatial clustering for any remaining days or other cities
+    remaining_days = max(1, days - len(day_clusters))
+    places_per_day = max(2, min(4, math.ceil(len(unvisited) / remaining_days))) if unvisited else 2
+
     while len(day_clusters) < days and unvisited:
         seed = unvisited.pop(0)
         cluster = [seed]
@@ -366,10 +399,20 @@ def generate_dynamic_day_wise_itinerary(
             cluster.append(unvisited.pop(0))
         day_clusters.append(cluster)
 
-    # If user asked for more days than distinct clusters, cycle/split gracefully
+    # If any remaining days still need clusters, distribute from pool gracefully
+    # Ensure EVERY single day has at least 2 places if pool has >= 2 places
     while len(day_clusters) < days and pool:
-        idx = len(day_clusters) % len(pool)
-        day_clusters.append([pool[idx]])
+        idx1 = (len(day_clusters) * 2) % len(pool)
+        idx2 = (len(day_clusters) * 2 + 1) % len(pool)
+        if len(pool) > 1 and idx1 != idx2:
+            day_clusters.append([pool[idx1], pool[idx2]])
+        else:
+            day_clusters.append([pool[idx1]])
+
+    # CRITICAL SAFEGUARD: Ensure NO day cluster in day_clusters is empty!
+    for i in range(len(day_clusters)):
+        if not day_clusters[i] and pool:
+            day_clusters[i] = [pool[i % len(pool)]]
 
     day_themes = [
         f"Heritage & Iconic Landmarks of {resolved_dest}",
@@ -582,11 +625,22 @@ def generate_dynamic_day_wise_itinerary(
             "estimated_cost_inr": 400 * travelers,
             "risk_level": "LOW",
         })
+        has_metro = db.query(MetroStation).filter(
+            MetroStation.city.ilike(f"%{resolved_dest}%")
+        ).first() is not None
+
+        if has_metro:
+            return_title = "Safe Return to Hotel via Verified Metro / App Cab"
+            return_desc = "Conclude sightseeing before late-night hours using verified Metro rail network or app-based cab."
+        else:
+            return_title = "Safe Return to Hotel via App Cab / Local Transit"
+            return_desc = "Conclude sightseeing before late-night hours using verified app cab (Ola/Uber) or pre-paid auto."
+
         timeline_items.append({
             "slot_type": "HOTEL_RETURN",
             "time_label": "20:30",
-            "title": "Safe Return to Hotel via Verified Metro / App Cab",
-            "description": "Conclude sightseeing before late-night hours for optimal travel safety.",
+            "title": return_title,
+            "description": return_desc,
             "estimated_cost_inr": 120,
             "risk_level": "LOW",
         })

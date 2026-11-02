@@ -44,15 +44,48 @@ export default function TransportPlannerPage() {
   }, []);
 
   useEffect(() => {
-    api.searchPlaces({ city, limit: 120 }).then((res) => {
-      const items = res.places || [];
+    const cleanCity = (city || '').split('(')[0].trim();
+    api.searchPlaces({ city: cleanCity, limit: 120 }).then(async (res) => {
+      let items = res.places || [];
+      if (items.length < 2) {
+        // Fetch from state / general search to ensure at least 4 places
+        try {
+          const sRes = await api.searchPlaces({ q: cleanCity, limit: 120 });
+          const more = sRes.places || [];
+          const seen = new Set(items.map((p) => p.id));
+          more.forEach((p) => {
+            if (!seen.has(p.id)) {
+              seen.add(p.id);
+              items.push(p);
+            }
+          });
+        } catch (_) {}
+      }
+
+      // If still fewer than 2, provide standard city landmark hubs
+      if (items.length === 1) {
+        items.push({
+          id: 'hub_railway',
+          name: `${cleanCity} Central Railway Station`,
+          city: cleanCity,
+        });
+        items.push({
+          id: 'hub_bus',
+          name: `${cleanCity} Main City Bus Stand / Junction`,
+          city: cleanCity,
+        });
+      } else if (items.length === 0) {
+        items = [
+          { id: 'hub_center', name: `${cleanCity} City Center & Clock Tower`, city: cleanCity },
+          { id: 'hub_railway', name: `${cleanCity} Central Railway Station`, city: cleanCity },
+          { id: 'hub_bus', name: `${cleanCity} Interstate Bus Terminal`, city: cleanCity },
+        ];
+      }
+
       setPlaces(items);
       if (items.length >= 2) {
         setOriginName(items[0].name);
         setDestName(items[1].name);
-      } else if (items.length === 1) {
-        setOriginName(items[0].name);
-        setDestName(`${city} Central Railway / Bus Junction`);
       }
     }).catch(() => {});
   }, [city]);

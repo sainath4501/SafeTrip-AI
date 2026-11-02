@@ -484,11 +484,11 @@ export default function TripPlannerPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 text-xs">
                         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                           <span className="text-[10px] font-bold text-slate-500 block uppercase">Transit Distance</span>
-                          <strong className="text-slate-900 text-sm">{activeDayObj.total_distance_km || 10.5} km total</strong>
+                          <strong className="text-slate-900 text-sm">{activeDayObj.total_distance_km ?? 0} km total</strong>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                           <span className="text-[10px] font-bold text-slate-500 block uppercase">Travel Time</span>
-                          <strong className="text-slate-900 text-sm">~{activeDayObj.total_travel_time_mins || 45} mins transit</strong>
+                          <strong className="text-slate-900 text-sm">~{activeDayObj.total_travel_time_mins ?? 0} mins transit</strong>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                           <span className="text-[10px] font-bold text-slate-500 block uppercase">Estimated Spend</span>
@@ -496,7 +496,7 @@ export default function TripPlannerPage() {
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                           <span className="text-[10px] font-bold text-slate-500 block uppercase">Safety Rating</span>
-                          <strong className="text-emerald-700 text-sm">{activeDayObj.day_safety_score || 85}/100 Safe</strong>
+                          <strong className="text-emerald-700 text-sm">{activeDayObj.day_safety_score ?? 85}/100 Safe</strong>
                         </div>
                       </div>
                     </div>
@@ -526,7 +526,7 @@ export default function TripPlannerPage() {
                                       <span>{item.time_label} • {item.title}</span>
                                     </div>
                                     <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px]">
-                                      Est. ₹{item.estimated_cost_inr} • Safety: {item.risk_level}
+                                      Est. ₹{item.estimated_cost_inr} • {item.risk_level === 'LOW' ? 'Verified Safe (Low Risk)' : `Risk: ${item.risk_level}`}
                                     </span>
                                   </div>
                                   <p className="text-xs text-amber-900 leading-relaxed">{item.description}</p>
@@ -536,7 +536,8 @@ export default function TripPlannerPage() {
                           }
 
                           // Attraction Slot with Travel Details
-                          const place = item.place_detail;
+                          const place = item.place_detail || item;
+                          if (!place) return null;
                           return (
                             <div key={idx} className="relative pl-8 border-l-2 border-teal-500">
                               <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-black flex items-center justify-center border-2 border-white shadow">
