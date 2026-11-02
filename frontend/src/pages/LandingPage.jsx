@@ -42,7 +42,7 @@ const HERO_CATEGORIES = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { searchCriteria, setSearchCriteria } = useTrip();
+  const { searchCriteria, setSearchCriteria, setActiveItinerary } = useTrip();
 
   const [startLocation, setStartLocation] = useState(searchCriteria.startLocation || 'Bangalore');
   const [destination, setDestination] = useState(searchCriteria.destination || 'Delhi');
@@ -86,6 +86,7 @@ export default function LandingPage() {
 
   const handlePlanTrip = (e) => {
     e.preventDefault();
+    if (setActiveItinerary) setActiveItinerary(null);
     setSearchCriteria({
       startLocation,
       destination,
@@ -101,6 +102,7 @@ export default function LandingPage() {
   };
 
   const runCanonicalDemo = (destCity, daysCount, budgetVal, cats) => {
+    if (setActiveItinerary) setActiveItinerary(null);
     setSearchCriteria({
       startLocation: startLocation || 'Bangalore',
       destination: destCity,
@@ -164,7 +166,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={handleSwapCities}
-                    className="text-[10px] sm:text-[11px] font-bold text-sky-600 hover:text-sky-800 px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 transition cursor-pointer shrink-0"
+                    className="text-[10px] sm:text-[11px] font-bold text-sky-600 hover:text-sky-800 px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 transition cursor-pointer select-none touch-manipulation shrink-0"
                     title="Swap From and To Cities"
                   >
                     ⇄ Swap From / To
@@ -263,7 +265,7 @@ export default function LandingPage() {
                         type="button"
                         key={pref}
                         onClick={() => toggleCategory(pref)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold transition ${
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition select-none touch-manipulation cursor-pointer ${
                           active
                             ? 'bg-sky-600 text-white shadow-sm'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -278,7 +280,7 @@ export default function LandingPage() {
 
               <button
                 type="submit"
-                className="w-full lg:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-extrabold text-sm shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 shrink-0 transition cursor-pointer"
+                className="w-full lg:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-extrabold text-sm shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 shrink-0 transition select-none touch-manipulation cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Plan My Trip</span>

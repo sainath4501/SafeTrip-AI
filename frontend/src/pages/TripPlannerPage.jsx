@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { api } from '../services/api';
 import {
@@ -40,6 +40,8 @@ const CATEGORIES = [
 
 export default function TripPlannerPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const autoPlan = searchParams.get('auto') === '1';
   const { searchCriteria, setSearchCriteria, activeItinerary, setActiveItinerary } = useTrip();
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -115,7 +117,7 @@ export default function TripPlannerPage() {
   };
 
   useEffect(() => {
-    if (!activeItinerary) {
+    if (autoPlan || !activeItinerary) {
       handleGenerate();
     } else if (!recommendations) {
       api.getRecommendations({
@@ -131,7 +133,7 @@ export default function TripPlannerPage() {
         customWeights: weights,
       }).then((data) => setRecommendations(data)).catch(() => { });
     }
-  }, []);
+  }, [autoPlan]);
 
   const handleDownloadPdf = async () => {
     if (!activeItinerary) return;

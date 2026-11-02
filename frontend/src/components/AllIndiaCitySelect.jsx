@@ -316,8 +316,15 @@ export default function AllIndiaCitySelect({
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -331,7 +338,7 @@ export default function AllIndiaCitySelect({
   );
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className={`relative ${open ? 'z-50' : 'z-10'}`}>
       {label && (
         <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
           {label}
@@ -339,11 +346,12 @@ export default function AllIndiaCitySelect({
       )}
       <button
         type="button"
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           setOpen((prev) => !prev);
           setFilterText('');
         }}
-        className="relative w-full pl-9 pr-8 py-3 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 font-bold text-slate-900 text-sm text-left flex items-center justify-between focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
+        className="relative w-full pl-9 pr-8 py-3 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 font-bold text-slate-900 text-sm text-left flex items-center justify-between focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer select-none touch-manipulation"
       >
         <MapPin className={`w-4 h-4 ${accentColor === 'emerald' ? 'text-emerald-600' : 'text-sky-600'} absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
         <div className="truncate">
@@ -358,7 +366,10 @@ export default function AllIndiaCitySelect({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden w-full max-w-full">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden w-full min-w-[280px] max-w-full"
+        >
           {/* Search input inside dropdown */}
           <div className="p-2.5 border-b border-slate-100 bg-slate-50">
             <div className="relative">
@@ -396,12 +407,13 @@ export default function AllIndiaCitySelect({
                   <button
                     type="button"
                     key={`${opt.type}-${opt.value}`}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onChange(opt.value);
                       setOpen(false);
                       setFilterText('');
                     }}
-                    className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-sky-50 transition cursor-pointer ${
+                    className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-sky-50 transition cursor-pointer touch-manipulation ${
                       isSelected ? 'bg-sky-50/80 font-extrabold text-sky-900' : 'text-slate-800'
                     }`}
                   >
@@ -424,12 +436,13 @@ export default function AllIndiaCitySelect({
                 {filterText.trim() && (
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onChange(filterText.trim());
                       setOpen(false);
                       setFilterText('');
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-sky-600 text-white text-xs font-bold"
+                    className="px-3 py-1.5 rounded-xl bg-sky-600 text-white text-xs font-bold touch-manipulation cursor-pointer"
                   >
                     Use "{filterText.trim()}"
                   </button>
