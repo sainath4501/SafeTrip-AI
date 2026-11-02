@@ -1275,6 +1275,9 @@ def _seed_all_india_master_districts(db: Session):
             ("Bangalore", "Namma Metro (BMRCL)", "Nadaprabhu Kempegowda (Majestic)", "Purple / Green Line", "#9333ea", 1, 12.9757, 77.5728, True, "Purple Line, Green Line", "KSR Bengaluru Railway Station, Kempegowda Bus Terminal"),
             ("Bangalore", "Namma Metro (BMRCL)", "Cubbon Park", "Purple Line", "#9333ea", 2, 12.9807, 77.5973, False, "Purple Line", "Cubbon Park, Visvesvaraya Museum, Vidhana Soudha, Bangalore Palace"),
             ("Bangalore", "Namma Metro (BMRCL)", "Lalbagh", "Green Line", "#16a34a", 3, 12.9465, 77.5801, False, "Green Line", "Lalbagh Botanical Garden, MTR"),
+            ("Bengaluru", "Namma Metro (BMRCL)", "Nadaprabhu Kempegowda (Majestic)", "Purple / Green Line", "#9333ea", 1, 12.9757, 77.5728, True, "Purple Line, Green Line", "KSR Bengaluru Railway Station, Kempegowda Bus Terminal"),
+            ("Bengaluru", "Namma Metro (BMRCL)", "Cubbon Park", "Purple Line", "#9333ea", 2, 12.9807, 77.5973, False, "Purple Line", "Cubbon Park, Visvesvaraya Museum, Vidhana Soudha, Bangalore Palace"),
+            ("Bengaluru", "Namma Metro (BMRCL)", "Lalbagh", "Green Line", "#16a34a", 3, 12.9465, 77.5801, False, "Green Line", "Lalbagh Botanical Garden, MTR"),
             ("Mumbai", "Mumbai Metro & Suburban", "Churchgate / CSMT Hub", "Aqua Line 3", "#0284c7", 1, 18.9322, 72.8264, True, "Line 3, Western/Central Line", "Gateway of India, Marine Drive, CSMVS Museum"),
             ("Chennai", "Chennai Metro (CMRL)", "Puratchi Thalaivar Dr. M.G.R. Central", "Blue / Green Line", "#2563eb", 1, 13.0822, 80.2755, True, "Blue Line, Green Line", "Marina Beach, Fort St. George"),
             ("Hyderabad", "Hyderabad Metro (HMRL)", "MG Bus Station (MGBS)", "Red / Green Line", "#dc2626", 1, 17.3782, 78.4843, True, "Red Line, Green Line", "Charminar, Salar Jung Museum"),
@@ -1295,6 +1298,7 @@ def _seed_all_india_master_districts(db: Session):
             BusStop(city="Delhi", stop_name="Qutub Minar Mehrauli Terminal", operator="DTC AC Express", routes_served="505, 534, 715, Airport Express Feeder", latitude=28.5238, longitude=77.1862, nearby_place="Qutub Minar"),
             BusStop(city="Mysore", stop_name="Mysore Palace City Bus Stand", operator="KSRTC Mysuru", routes_served="101, 201 (Chamundi Hill), 303 (Brindavan Gardens)", latitude=12.3075, longitude=76.6540, nearby_place="Mysore Palace"),
             BusStop(city="Bangalore", stop_name="Kempegowda (Majestic) BMTC Volvos", operator="BMTC Vajra AC", routes_served="KIA-9, 201R, 335E, Hop-On Sightseeing", latitude=12.9772, longitude=77.5715, nearby_place="Bangalore City Center"),
+            BusStop(city="Bengaluru", stop_name="Kempegowda (Majestic) BMTC Volvos", operator="BMTC Vajra AC", routes_served="KIA-9, 201R, 335E, Hop-On Sightseeing", latitude=12.9772, longitude=77.5715, nearby_place="Bangalore City Center"),
         ])
 
     if db.query(Hotel).count() == 0:

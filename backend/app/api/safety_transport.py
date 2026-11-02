@@ -1,6 +1,7 @@
 from typing import Optional, Dict
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.ml.predictor import predict_crowd_ml, predict_weather_risk_ml
@@ -10,6 +11,7 @@ from app.routing.engine import (
     calculate_local_transport_options,
     calculate_intercity_transport,
     resolve_city_coordinates,
+    get_city_search_terms,
     haversine_km,
     CITY_COORDINATES,
 )
@@ -300,22 +302,26 @@ def get_transport_options(
         db=db,
     )
 
-    metro_stations = (
-        db.query(MetroStation)
-        .filter(
-            (MetroStation.city.ilike(f"%{clean_city}%"))
-            | (MetroStation.city.ilike(f"%{clean_city.split()[0]}%"))
-        )
-        .all()
-    )
-    bus_stops = (
-        db.query(BusStop)
-        .filter(
-            (BusStop.city.ilike(f"%{clean_city}%"))
-            | (BusStop.city.ilike(f"%{clean_city.split()[0]}%"))
-        )
-        .all()
-    )
+    search_terms = get_city_search_terms(clean_city)
+    metro_conds = [MetroStation.city.ilike(f"%{t}%") for t in search_terms]
+    raw_metros = db.query(MetroStation).filter(or_(*metro_conds)).all() if metro_conds else []
+    seen_metros = set()
+    metro_stations = []
+    for m in raw_metros:
+        k = m.station_name.lower().strip()
+        if k not in seen_metros:
+            seen_metros.add(k)
+            metro_stations.append(m)
+
+    bus_conds = [BusStop.city.ilike(f"%{t}%") for t in search_terms]
+    raw_buses = db.query(BusStop).filter(or_(*bus_conds)).all() if bus_conds else []
+    seen_buses = set()
+    bus_stops = []
+    for b in raw_buses:
+        k = b.stop_name.lower().strip()
+        if k not in seen_buses:
+            seen_buses.add(k)
+            bus_stops.append(b)
 
     return {
         "localTransport": local_opts,

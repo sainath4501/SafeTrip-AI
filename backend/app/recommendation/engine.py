@@ -2,6 +2,7 @@ import json
 import math
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.config import DEFAULT_RECOMMENDATION_WEIGHTS
 from app.models.entities import TouristPlace, Hotel, Restaurant, MetroStation
@@ -9,6 +10,7 @@ from app.routing.engine import (
     haversine_km,
     calculate_local_transport_options,
     calculate_intercity_transport,
+    get_city_search_terms,
     CITY_COORDINATES,
 )
 from app.safety.engine import compute_comprehensive_safety_risk
@@ -626,9 +628,9 @@ def generate_dynamic_day_wise_itinerary(
             "estimated_cost_inr": 400 * travelers,
             "risk_level": "LOW",
         })
-        has_metro = db.query(MetroStation).filter(
-            MetroStation.city.ilike(f"%{resolved_dest}%")
-        ).first() is not None
+        metro_terms = get_city_search_terms(resolved_dest)
+        metro_conds = [MetroStation.city.ilike(f"%{t}%") for t in metro_terms]
+        has_metro = db.query(MetroStation).filter(or_(*metro_conds)).first() is not None if metro_conds else False
 
         if has_metro:
             return_title = "Safe Return to Hotel via Verified Metro / App Cab"

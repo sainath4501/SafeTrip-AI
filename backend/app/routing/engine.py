@@ -2,6 +2,7 @@ import math
 from typing import Dict, Any, List, Optional, Tuple
 import networkx as nx
 import requests
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.config import TRANSPORT_FARE_CONFIG
 from app.database.india_cities_catalog import ALL_INDIA_CITIES_DATA
@@ -81,6 +82,73 @@ for _st, _dist, _city, _lat, _lon, *_rest in ALL_INDIA_CITIES_DATA:
         CITY_COORDINATES[_clean_c] = (float(_lat), float(_lon))
 
 
+CITY_ALIASES: Dict[str, List[str]] = {
+    "bengaluru": ["bengaluru", "bangalore"],
+    "bangalore": ["bangalore", "bengaluru"],
+    "chennai": ["chennai", "madras"],
+    "madras": ["madras", "chennai"],
+    "mumbai": ["mumbai", "bombay"],
+    "bombay": ["bombay", "mumbai"],
+    "kolkata": ["kolkata", "calcutta"],
+    "calcutta": ["calcutta", "kolkata"],
+    "prayagraj": ["prayagraj", "allahabad"],
+    "allahabad": ["allahabad", "prayagraj"],
+    "varanasi": ["varanasi", "banaras", "kashi", "benares"],
+    "banaras": ["banaras", "varanasi", "kashi"],
+    "kashi": ["kashi", "varanasi", "banaras"],
+    "gurugram": ["gurugram", "gurgaon"],
+    "gurgaon": ["gurgaon", "gurugram"],
+    "kochi": ["kochi", "cochin"],
+    "cochin": ["cochin", "kochi"],
+    "thiruvananthapuram": ["thiruvananthapuram", "trivandrum"],
+    "trivandrum": ["trivandrum", "thiruvananthapuram"],
+    "puducherry": ["puducherry", "pondicherry"],
+    "pondicherry": ["pondicherry", "puducherry"],
+    "mysuru": ["mysuru", "mysore"],
+    "mysore": ["mysore", "mysuru"],
+    "mangaluru": ["mangaluru", "mangalore"],
+    "mangalore": ["mangalore", "mangaluru"],
+    "belagavi": ["belagavi", "belgaum"],
+    "belgaum": ["belgaum", "belagavi"],
+    "vadodara": ["vadodara", "baroda"],
+    "baroda": ["baroda", "vadodara"],
+    "visakhapatnam": ["visakhapatnam", "vizag"],
+    "vizag": ["vizag", "visakhapatnam"],
+    "delhi": ["delhi", "new delhi", "ncr"],
+    "new delhi": ["new delhi", "delhi", "ncr"],
+    "noida": ["noida", "greater noida", "delhi"],
+    "greater noida": ["greater noida", "noida", "delhi"],
+    "hyderabad": ["hyderabad", "secunderabad"],
+    "secunderabad": ["secunderabad", "hyderabad"],
+    "ahmedabad": ["ahmedabad", "gandhinagar", "amdavad"],
+}
+
+
+def get_city_search_terms(city_name: str) -> List[str]:
+    """
+    Returns search terms and historical aliases for any Indian city.
+    Ensures 'Bengaluru' matches 'Bangalore', 'Gurugram' matches 'Gurgaon', etc.
+    """
+    if not city_name:
+        return []
+    cleaned = city_name.strip().lower()
+    cleaned = cleaned.split("(")[0].strip()
+    base = (
+        cleaned.replace(" urban", "")
+        .replace(" rural", "")
+        .replace(" city", "")
+        .replace(" district", "")
+        .strip()
+    )
+    terms = {cleaned, base}
+    first_word = cleaned.split()[0] if cleaned.split() else ""
+    for candidate in [cleaned, base, first_word]:
+        if candidate in CITY_ALIASES:
+            for alias in CITY_ALIASES[candidate]:
+                terms.add(alias)
+    return [t for t in terms if t]
+
+
 def resolve_city_coordinates(city_name: str, db: Optional[Session] = None) -> Tuple[float, float]:
     key = (city_name or "").strip().lower()
     if key in CITY_COORDINATES:
@@ -155,16 +223,17 @@ def calculate_local_transport_options(
 
     # 2. Metro (for cities with Metro systems across India)
     clean_city = (city or "Delhi").strip()
+    search_terms = get_city_search_terms(clean_city)
     db_metro_stations = []
     if db is not None:
-        db_metro_stations = (
-            db.query(MetroStation)
-            .filter(
-                (MetroStation.city.ilike(f"%{clean_city}%"))
-                | (MetroStation.city.ilike(f"%{clean_city.split()[0]}%"))
-            )
-            .all()
-        )
+        metro_conds = [MetroStation.city.ilike(f"%{t}%") for t in search_terms]
+        raw_metros = db.query(MetroStation).filter(or_(*metro_conds)).all() if metro_conds else []
+        seen_ms = set()
+        for m in raw_metros:
+            k = m.station_name.lower().strip()
+            if k not in seen_ms:
+                seen_ms.add(k)
+                db_metro_stations.append(m)
 
     has_metro = len(db_metro_stations) > 0
     metro_fare = get_metro_fare(road_km) if has_metro else 0
@@ -251,14 +320,14 @@ def calculate_local_transport_options(
     # 3. City Bus
     db_bus_stops = []
     if db is not None:
-        db_bus_stops = (
-            db.query(BusStop)
-            .filter(
-                (BusStop.city.ilike(f"%{clean_city}%"))
-                | (BusStop.city.ilike(f"%{clean_city.split()[0]}%"))
-            )
-            .all()
-        )
+        bus_conds = [BusStop.city.ilike(f"%{t}%") for t in search_terms]
+        raw_buses = db.query(BusStop).filter(or_(*bus_conds)).all() if bus_conds else []
+        seen_bs = set()
+        for b in raw_buses:
+            k = b.stop_name.lower().strip()
+            if k not in seen_bs:
+                seen_bs.add(k)
+                db_bus_stops.append(b)
 
     bus_fare = int(round(TRANSPORT_FARE_CONFIG["bus"]["base_fare"] + road_km * TRANSPORT_FARE_CONFIG["bus"]["per_km"]))
     bus_fare = max(10, min(60, (bus_fare // 5) * 5))
