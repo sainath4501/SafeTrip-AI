@@ -314,6 +314,8 @@ def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
             "risk_level": "LOW",
         })
 
+        timeline_items.sort(key=lambda x: x["time_label"])
+
         days_out.append({
             "day": d.day_number,
             "theme": d.theme_title,

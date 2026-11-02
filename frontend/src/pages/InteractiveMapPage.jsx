@@ -204,19 +204,60 @@ export default function InteractiveMapPage() {
   // Scoped list for From (A) and To (B) dropdowns:
   // When a specific city is selected (e.g. Ahmedabad with 7 places), strictly show only that city's places
   const dropdownPlaces = useMemo(() => {
-    if (selectedCity && selectedCity !== '__all__' && places.length >= 2) {
-      return places;
-    }
-    if (selectedCity && selectedCity !== '__all__' && places.length === 1) {
-      const list = [...places];
-      if (destId && !list.some((p) => String(p.id) === String(destId))) {
-        const dp = selectablePlaces.find((p) => String(p.id) === String(destId));
-        if (dp) list.push(dp);
+    if (selectedCity && selectedCity !== '__all__') {
+      const cleanCity = selectedCity.split('(')[0].trim().toLowerCase();
+      const cityMatches = places.filter((p) => {
+        const pCity = (p.city || '').trim().toLowerCase();
+        return pCity === cleanCity || pCity.includes(cleanCity) || cleanCity.includes(pCity);
+      });
+
+      if (cityMatches.length >= 2) {
+        return cityMatches;
       }
-      return list;
+      if (cityMatches.length === 1) {
+        const base = cityMatches[0];
+        const localHub = {
+          id: `${base.id}_hub`,
+          name: `${base.city} City Center & Junction`,
+          city: base.city,
+          state: base.state,
+          latitude: base.latitude ? base.latitude + 0.015 : 23.0225,
+          longitude: base.longitude ? base.longitude + 0.015 : 72.5714,
+          category: 'Transit Hub',
+          safetyScore: 88,
+          entryFee: 0,
+        };
+        return [base, localHub];
+      }
+      return cityMatches;
     }
-    return selectablePlaces;
-  }, [places, selectedCity, selectablePlaces, destId]);
+    return places.length > 0 ? places : selectablePlaces;
+  }, [places, selectedCity, selectablePlaces]);
+
+  // Combined pool so markers & route solvers can always find origin/dest objects
+  const allAvailablePlaces = useMemo(() => {
+    const map = new Map();
+    dropdownPlaces.forEach((p) => map.set(String(p.id), p));
+    places.forEach((p) => map.set(String(p.id), p));
+    allStatePlaces.forEach((p) => map.set(String(p.id), p));
+    return Array.from(map.values());
+  }, [dropdownPlaces, places, allStatePlaces]);
+
+  // Synchronize originId and destId whenever dropdownPlaces changes
+  useEffect(() => {
+    if (!dropdownPlaces || dropdownPlaces.length === 0) return;
+    const hasOrigin = dropdownPlaces.some((p) => String(p.id) === String(originId));
+    const hasDest = dropdownPlaces.some((p) => String(p.id) === String(destId));
+
+    if (!hasOrigin) {
+      setOriginId(String(dropdownPlaces[0].id));
+    }
+    const currentOrigin = !hasOrigin ? String(dropdownPlaces[0].id) : originId;
+    if (!hasDest || (dropdownPlaces.length > 1 && String(destId) === currentOrigin)) {
+      const nextDest = dropdownPlaces.find((p) => String(p.id) !== currentOrigin);
+      if (nextDest) setDestId(String(nextDest.id));
+    }
+  }, [dropdownPlaces]);
 
   // 4. Fetch Tourist Places when selectedState or selectedCity changes
   useEffect(() => {
@@ -248,13 +289,7 @@ export default function InteractiveMapPage() {
         setDestId(String(items[1].id));
       } else if (items.length === 1) {
         setOriginId(String(items[0].id));
-        // Search all state places to ensure distinct destination
-        const alt = allStatePlaces.find((p) => String(p.id) !== String(items[0].id));
-        if (alt) {
-          setDestId(String(alt.id));
-        } else {
-          setDestId(String(items[0].id));
-        }
+        setDestId(`${items[0].id}_hub`);
         if (mapInstanceRef.current && items[0].latitude && items[0].longitude) {
           mapInstanceRef.current.flyTo([items[0].latitude, items[0].longitude], 13);
         }
@@ -328,8 +363,8 @@ export default function InteractiveMapPage() {
 
   // 6. Compute Route Comparison (Route A vs Route B)
   const handleCompareRoutes = async () => {
-    const origin = selectablePlaces.find((p) => String(p.id) === String(originId));
-    const dest = selectablePlaces.find((p) => String(p.id) === String(destId));
+    const origin = allAvailablePlaces.find((p) => String(p.id) === String(originId));
+    const dest = allAvailablePlaces.find((p) => String(p.id) === String(destId));
     if (!origin || !dest) return;
 
     if (String(origin.id) === String(dest.id)) {
@@ -577,8 +612,8 @@ export default function InteractiveMapPage() {
     group.clearLayers();
     const boundsPoints = [];
 
-    const originPlace = selectablePlaces.find((p) => String(p.id) === String(originId));
-    const destPlace = selectablePlaces.find((p) => String(p.id) === String(destId));
+    const originPlace = allAvailablePlaces.find((p) => String(p.id) === String(originId));
+    const destPlace = allAvailablePlaces.find((p) => String(p.id) === String(destId));
 
     // Render Tourist Places Markers
     if (layers.places) {

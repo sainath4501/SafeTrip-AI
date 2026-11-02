@@ -611,7 +611,8 @@ def generate_dynamic_day_wise_itinerary(
             prev_place = place
 
         # Evening Local Food & Shopping Recommendation + Return to Hotel
-        evening_time = f"{max(18, min(20, cur_minutes // 60)):02d}:30"
+        cur_evening = max(cur_minutes, 18 * 60 + 30)
+        evening_time = f"{cur_evening // 60:02d}:{cur_evening % 60:02d}"
         evening_food = (
             cluster[-1].get("local_food_recommendations")
             if cluster and cluster[-1].get("local_food_recommendations")
@@ -636,15 +637,21 @@ def generate_dynamic_day_wise_itinerary(
             return_title = "Safe Return to Hotel via App Cab / Local Transit"
             return_desc = "Conclude sightseeing before late-night hours using verified app cab (Ola/Uber) or pre-paid auto."
 
+        return_minutes = min(22 * 60, cur_evening + 90)
+        return_time = f"{return_minutes // 60:02d}:{return_minutes % 60:02d}"
+
         timeline_items.append({
             "slot_type": "HOTEL_RETURN",
-            "time_label": "20:30",
+            "time_label": return_time,
             "title": return_title,
             "description": return_desc,
             "estimated_cost_inr": 120,
             "risk_level": "LOW",
         })
         daily_cost += 400 * travelers + 120
+
+        # Guarantee strict chronological sequence for timeline
+        timeline_items.sort(key=lambda x: x["time_label"])
 
         total_day_dist = round(sum(float(p.get("distance_from_previous_km", 0.0) or 0.0) for p in day_places_out), 1)
         total_day_trans_mins = sum(int(p.get("estimated_travel_time_mins", 0) or 0) for p in day_places_out)

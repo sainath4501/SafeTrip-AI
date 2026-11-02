@@ -40,15 +40,32 @@ export default function SafetyDashboardPage() {
     scam_risk: 0.15,
   });
 
-  // Load States, Cities, Places
+  // Load States and Cities on Mount
   useEffect(() => {
     api.getStates().then((res) => setStates(res.states || [])).catch(() => {});
     api.getCities().then((res) => setAllCities(res.cities || [])).catch(() => {});
-    api.searchPlaces({ limit: 600 }).then((res) => {
+  }, []);
+
+  // Fetch Tourist Places scoped specifically to selectedState and selectedCity
+  useEffect(() => {
+    if (!selectedState) return;
+    const cleanCity = (selectedCity && selectedCity !== '__all__') ? selectedCity.split('(')[0].trim() : undefined;
+    const params = { state: selectedState, limit: 600 };
+    if (cleanCity) params.city = cleanCity;
+
+    api.searchPlaces(params).then((res) => {
       const items = res.places || [];
       setPlaces(items);
+      if (items.length > 0) {
+        setSelectedPlaceName(items[0].name);
+        setDestination(items[0].city || items[0].state || selectedCity || selectedState);
+        setCategory(items[0].category || 'Historical');
+        setActivity(items[0].category || 'Sightseeing');
+      } else {
+        setSelectedPlaceName('');
+      }
     }).catch(() => {});
-  }, []);
+  }, [selectedState, selectedCity]);
 
   // Filter cities by state
   const stateCities = useMemo(() => {
@@ -65,7 +82,11 @@ export default function SafetyDashboardPage() {
       list = list.filter((p) => p.state?.toLowerCase() === selectedState.toLowerCase());
     }
     if (selectedCity && selectedCity !== '__all__') {
-      list = list.filter((p) => p.city?.toLowerCase() === selectedCity.toLowerCase());
+      const targetCity = selectedCity.split('(')[0].trim().toLowerCase();
+      list = list.filter((p) => {
+        const pCity = (p.city || '').trim().toLowerCase();
+        return pCity.includes(targetCity) || targetCity.includes(pCity);
+      });
     }
     if (placeSearch.trim()) {
       const q = placeSearch.toLowerCase();
@@ -193,11 +214,15 @@ export default function SafetyDashboardPage() {
               onChange={handlePlaceSelect}
               className="w-full rounded-xl border border-emerald-300 px-3 py-2.5 text-xs font-bold bg-emerald-50/50 text-emerald-950 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
-              {(filteredPlaces.length > 0 ? filteredPlaces : places).map((p) => (
-                <option key={p.id} value={p.name}>
-                  {p.name} ({p.city})
-                </option>
-              ))}
+              {filteredPlaces.length === 0 ? (
+                <option value="">No places found for {selectedCity || selectedState}</option>
+              ) : (
+                filteredPlaces.map((p) => (
+                  <option key={p.id} value={p.name}>
+                    {p.name} ({p.city})
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
