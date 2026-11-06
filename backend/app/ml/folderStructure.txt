@@ -1,0 +1,96 @@
+
+ProjectCapstone/
+│
+├── frontend/
+│   ├── public/
+│   │   ├── logo.png
+│   │   └── images/
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── MapView.jsx
+│   │   │   ├── RiskCard.jsx
+│   │   │   └── RecommendationCard.jsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Home.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── SearchPlaces.jsx
+│   │   │   ├── Recommendations.jsx
+│   │   │   └── RiskAnalysis.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   │
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── auth.py
+│   │   │   ├── places.py
+│   │   │   ├── recommendations.py
+│   │   │   ├── crowd.py
+│   │   │   ├── weather.py
+│   │   │   ├── scams.py
+│   │   │   ├── incidents.py
+│   │   │   ├── routes_safety.py
+│   │   │   └── risk.py
+│   │   │
+│   │   ├── models/
+│   │   │   └── database_models.py
+│   │   │
+│   │   ├── schemas/
+│   │   │   └── request_response.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── risk_service.py
+│   │   │   ├── weather_service.py
+│   │   │   ├── crowd_service.py
+│   │   │   └── route_service.py
+│   │   │
+│   │   └── ml/
+│   │       ├── run_all_tests.py
+│   │       ├── road_risk_model.py
+│   │       ├── accident_model.py
+│   │       ├── weather_model.py
+│   │       ├── recommendation_model.py
+│   │       ├── saved_models/
+│   │       └── results/
+│   │
+│   ├── requirements.txt
+│   └── .env
+│
+├── Dataset/
+│   ├── Indian Places to Visit Reviews Data/
+│   │   └── Review_db.csv
+│   │
+│   ├── Weather Data in India/
+│   │   └── Weather Data in India from 1901 to 2017.csv
+│   │
+│   ├── Indian Road Accident Dataset/
+│   │   └── indian_roads_dataset.csv
+│   │
+│   └── Rainfall Data/
+│       └── rainfall.csv
+│
+├── database/
+│   ├── schema.sql
+│   └── sample_data.sql
+│
+├── docs/
+│   ├── synopsis.pdf
+│   ├── literature_review.pdf
+│   └── project_report.pdf
+│
+├── README.md
+└── .gitignore
