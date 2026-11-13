@@ -175,3 +175,5 @@ docker compose up --build -d
    Click **"Download Full PDF Itinerary"** on `/planner` → Downloads a formatted `ReportLab` PDF containing trip summary, itemized budget table, day-by-day timeline, transport/metro notes, and emergency helplines (`112`, `1363`, `1091`).
 10. **Test Case 10 — ML Model Evaluation & Live Retraining:**  
     Open `/ml-dashboard` → Inspect Accuracy, Precision, Recall, F1-Score, 3×3 Confusion Matrix, and Feature Importance across Random Forest, Decision Tree, and Logistic Regression for all 4 `.pkl` models.
+#   S a f e T r i p - A I  
+ 
