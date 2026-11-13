@@ -42,13 +42,13 @@ htmlcov/
 !backend/.env.example
 
 # --- Local Databases & SQLite Locks ---
-# (Backend automatically re-creates & seeds safetrip_ai.db on launch)
-*.db
 *.db-journal
 *.db-wal
 *.db-shm
 *.sqlite
 *.sqlite3
+*.db
+!data/safetrip_ai.db
 
 # --- Runtime Uploads & Exports ---
 data/uploads/*
