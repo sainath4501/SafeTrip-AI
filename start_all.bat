@@ -9,3 +9,4 @@ start "SafeTrip AI - Frontend Vite (Port 5173)" cmd /k "cd frontend && npm run d
 echo Both servers started!
 echo Frontend URL: http://localhost:5173
 echo Backend API Docs: http://127.0.0.1:8000/docs
+
